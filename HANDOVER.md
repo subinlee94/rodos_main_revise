@@ -75,10 +75,10 @@
 
 주요 파일:
 
-- `rodos2-ui/src/components/wizard/AvailableModulesGrid.js`
-- `rodos2-ui/src/styles/wizard/AvailableModulesGrid.css`
-- `rodos2-ui/src/components/wizard/IDnTypePage.js`
-- `rodos2-ui/src/components/wizard/SWModuleSelector.js`
+- [rodos2-ui/src/components/wizard/AvailableModulesGrid.js](rodos2-ui/src/components/wizard/AvailableModulesGrid.js)
+- [rodos2-ui/src/styles/wizard/AvailableModulesGrid.css](rodos2-ui/src/styles/wizard/AvailableModulesGrid.css)
+- [rodos2-ui/src/components/wizard/IDnTypePage.js](rodos2-ui/src/components/wizard/IDnTypePage.js)
+- [rodos2-ui/src/components/wizard/SWModuleSelector.js](rodos2-ui/src/components/wizard/SWModuleSelector.js)
 
 ### 4.2 Software 정보 모델 저장 오류 수정
 
@@ -97,8 +97,8 @@
 
 주요 파일:
 
-- `rodos2-ui/src/utils/Options.js`
-- `rodos2-ui/src/hooks/usePropertiesState.js`
+- [rodos2-ui/src/utils/Options.js](rodos2-ui/src/utils/Options.js)
+- [rodos2-ui/src/hooks/usePropertiesState.js](rodos2-ui/src/hooks/usePropertiesState.js)
 
 ### 4.3 Registry 조회·업로드 복원력 강화
 
@@ -125,16 +125,16 @@
 
 주요 파일:
 
-- `IMRegistryController.java`
-- `IMRegistryServiceImpl.java`
-- `LocalImRegistryStore.java`
-- `ImUploadResult.java`
-- `WorkspaceImService.java`
-- `application.properties`
-- `useRegistryModules.js`
-- `Workspace.js`
-- `workspaceService.js`
-- `registryFetch.js`
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/controller/IMRegistryController.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/controller/IMRegistryController.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/informationModel/IMRegistryServiceImpl.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/informationModel/IMRegistryServiceImpl.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/informationModel/LocalImRegistryStore.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/informationModel/LocalImRegistryStore.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/informationModel/ImUploadResult.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/informationModel/ImUploadResult.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/WorkspaceImService.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/WorkspaceImService.java)
+- [rodos2-server/src/main/resources/application.properties](rodos2-server/src/main/resources/application.properties)
+- [rodos2-ui/src/hooks/useRegistryModules.js](rodos2-ui/src/hooks/useRegistryModules.js)
+- [rodos2-ui/src/components/ide/Workspace.js](rodos2-ui/src/components/ide/Workspace.js)
+- [rodos2-ui/src/services/workspaceService.js](rodos2-ui/src/services/workspaceService.js)
+- [rodos2-ui/src/utils/registryFetch.js](rodos2-ui/src/utils/registryFetch.js)
 
 운영 주의:
 
@@ -165,14 +165,14 @@
 
 주요 파일:
 
-- `useCanvasDragAndDrop.js`
-- `moduleLinkUtils.js`
-- `useCanvasState.js`
-- `Canvas.js`
-- `IDE.js`
-- `useWizardDialogState.js`
-- `SharedUserStateService.java`
-- `HWInfo.java`
+- [rodos2-ui/src/hooks/useCanvasDragAndDrop.js](rodos2-ui/src/hooks/useCanvasDragAndDrop.js)
+- [rodos2-ui/src/utils/canvas/moduleLinkUtils.js](rodos2-ui/src/utils/canvas/moduleLinkUtils.js)
+- [rodos2-ui/src/hooks/useCanvasState.js](rodos2-ui/src/hooks/useCanvasState.js)
+- [rodos2-ui/src/components/ide/Canvas.js](rodos2-ui/src/components/ide/Canvas.js)
+- [rodos2-ui/src/components/ide/IDE.js](rodos2-ui/src/components/ide/IDE.js)
+- [rodos2-ui/src/hooks/useWizardDialogState.js](rodos2-ui/src/hooks/useWizardDialogState.js)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/SharedUserStateService.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/SharedUserStateService.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/HWInfo.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/HWInfo.java)
 
 ### 4.5 연결 정보 모델의 Properties 계승
 
@@ -194,11 +194,11 @@
 
 주요 파일:
 
-- `PropertiesPage.js`
-- `usePropertiesState.js`
-- `linkedPropertiesMerge.js`
-- `useWizardDialogState.js`
-- `PropertiesMapSerializer.java`
+- [rodos2-ui/src/components/wizard/PropertiesPage.js](rodos2-ui/src/components/wizard/PropertiesPage.js)
+- [rodos2-ui/src/hooks/usePropertiesState.js](rodos2-ui/src/hooks/usePropertiesState.js)
+- [rodos2-ui/src/utils/wizard/linkedPropertiesMerge.js](rodos2-ui/src/utils/wizard/linkedPropertiesMerge.js)
+- [rodos2-ui/src/hooks/useWizardDialogState.js](rodos2-ui/src/hooks/useWizardDialogState.js)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/PropertiesMapSerializer.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/PropertiesMapSerializer.java)
 
 ### 4.6 XML/JSON 호환 처리
 
@@ -223,12 +223,12 @@
 
 주요 파일:
 
-- `Properties.java`
-- `ExecutionType.java`
-- `Library.java`
-- `Organization.java`
-- `IOVariable.java`
-- `PropertiesMapSerializer.java`
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/Properties.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/Properties.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/ExecutionType.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/ExecutionType.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/Library.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/Library.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/Organization.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/sim/Organization.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/cim/IOVariable.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/model/cim/IOVariable.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/PropertiesMapSerializer.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/PropertiesMapSerializer.java)
 
 ### 4.7 Properties·I/O·Services의 선택적 import
 
@@ -246,13 +246,13 @@
 
 주요 파일:
 
-- `IMRegistryController.java`
-- `IOVariablesPage.js`
-- `ServicesPage.js`
-- `linkedModuleSource.js`
-- `registryService.js`
-- `hwAspectsService.js`
-- `swAspectsService.js`
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/controller/IMRegistryController.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/controller/IMRegistryController.java)
+- [rodos2-ui/src/components/wizard/IOVariablesPage.js](rodos2-ui/src/components/wizard/IOVariablesPage.js)
+- [rodos2-ui/src/components/wizard/ServicesPage.js](rodos2-ui/src/components/wizard/ServicesPage.js)
+- [rodos2-ui/src/utils/wizard/linkedModuleSource.js](rodos2-ui/src/utils/wizard/linkedModuleSource.js)
+- [rodos2-ui/src/services/registryService.js](rodos2-ui/src/services/registryService.js)
+- [rodos2-ui/src/services/hwAspectsService.js](rodos2-ui/src/services/hwAspectsService.js)
+- [rodos2-ui/src/services/swAspectsService.js](rodos2-ui/src/services/swAspectsService.js)
 
 ### 4.8 Execute 준비 데이터와 사전 검증
 
@@ -280,16 +280,16 @@
 
 변경하지 않은 부분:
 
-- `ExecutorManager`
-- `DeployAgentApi`
-- `DockerCMD`
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/compute/ExecutorManager.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/compute/ExecutorManager.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/agent/DeployAgentApi.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/rest/agent/DeployAgentApi.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/compute/docker/DockerCMD.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/compute/docker/DockerCMD.java)
 
 주요 파일:
 
-- `SharedUserStateService.java`
-- `SharedUserStateController.java`
-- `useModuleProgress.js`
-- `api.js`
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/SharedUserStateService.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/service/SharedUserStateService.java)
+- [rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/controller/SharedUserStateController.java](rodos2-server/src/main/java/com/java/kr/ac/kangwon/rodos/controller/SharedUserStateController.java)
+- [rodos2-ui/src/hooks/useModuleProgress.js](rodos2-ui/src/hooks/useModuleProgress.js)
+- [rodos2-ui/src/services/api.js](rodos2-ui/src/services/api.js)
 
 ## 5. 주요 API 변경
 
