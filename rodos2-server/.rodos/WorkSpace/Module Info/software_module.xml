@@ -17,14 +17,23 @@
         <mID>68451959d205584aa3da384997e263120032A3C800000000000000008C5000</mID>
         <iID>00</iID>
       </moduleID>
+      <moduleID>
+        <mID>e4f9970fef8f56d397451d3891318b490012DF150000000000000000941000</mID>
+        <iID>00</iID>
+      </moduleID>
+      <moduleID>
+        <mID>7f1f9077d09859e39debf77996ca561200A3A23C0000000000000000984000</mID>
+        <iID>00</iID>
+      </moduleID>
+      <moduleID>
+        <mID>e4ab5c3f180d5f11bea033feb2b5a98a00F3A0400000000000000000984000</mID>
+        <iID>00</iID>
+      </moduleID>
     </swAspects>
     <hwAspects/>
     <informationModelVersion>1.0</informationModelVersion>
   </idnType>
   <properties>
-    <Property complexType="NONE" name="btLoopDuration" type="Integer" unit="ms">
-      <value>10</value>
-    </Property>
     <osType/>
     <compiler>
       <osname/>
@@ -32,8 +41,13 @@
   </properties>
   <ioVariables>
     <Inputs>
+      <Input name="navigate_to_pose" type="nav2_msgs.action.NavigateToPose" unit="" description="Navigation goal with target pose and behavior tree specification"/>
       <Input name="navigate_through_poses" type="nav2_msgs.action.NavigateThroughPoses" unit="" description=""/>
     </Inputs>
+    <Outputs>
+      <Output name="navigation_feedback" type="nav2_msgs.action.NavigateToPose" unit="" description="Real-time navigation status and progress"/>
+      <Output name="navigation_result" type="nav2_msgs.action.NavigateToPose" unit="" description="Final navigation result with success/failure status"/>
+    </Outputs>
   </ioVariables>
   <services>
     <NoOfBasicService/>

@@ -127,9 +127,17 @@ function IDE() {
     }
   };
 
-  const handleOpenControllerWizard = (hwModuleIdx, hwModule, connectedSWModules = [], droppedSWModule = null) => {
-    console.log('Controller Wizard 열기:', hwModuleIdx, hwModule, connectedSWModules, droppedSWModule);
-    openWizard('controller', {
+  /** SW → Controller/Robot linked-only wizard (ISO-style swAspects composition). */
+  const handleOpenLinkedWizard = (
+    wizardType,
+    hwModuleIdx,
+    hwModule,
+    connectedSWModules = [],
+    droppedSWModule = null
+  ) => {
+    const parentLabel = wizardType === 'robot' ? 'Robot' : 'Controller';
+    console.log(`${parentLabel} linked wizard 열기:`, hwModuleIdx, hwModule, connectedSWModules, droppedSWModule);
+    openWizard(wizardType === 'robot' ? 'robot' : 'controller', {
       mode: 'controller-linked-only',
       hwModuleIdx,
       hwModule,
@@ -138,18 +146,22 @@ function IDE() {
     });
   };
 
+  const handleOpenControllerWizard = (hwModuleIdx, hwModule, connectedSWModules = [], droppedSWModule = null) => {
+    handleOpenLinkedWizard('controller', hwModuleIdx, hwModule, connectedSWModules, droppedSWModule);
+  };
+
   const handleWizardComplete = (wizardData) => {
     // Wizard 완료 후 Sidebar의 workspace 구조를 갱신
     if (sidebarRef.current && sidebarRef.current.refreshWorkspace) {
       sidebarRef.current.refreshWorkspace();
     }
 
-    // Controller 드래그-드롭 위자드 완료: 컨트롤러 모듈 정보모델 상태를 캔버스에 저장
+    // Controller/Robot linked wizard 완료: 부모 정보모델을 캔버스에 저장
     if (wizardData && wizardData.type === 'controller-linked-only' && wizardData.hwModuleIdx !== undefined) {
       if (canvasRef.current && canvasRef.current.updateControllerModuleInfo) {
         canvasRef.current.updateControllerModuleInfo(wizardData.hwModuleIdx, wizardData.controllerInfoModel || {});
       }
-      console.log('Controller linked wizard 완료:', wizardData);
+      console.log('Linked parent wizard 완료:', wizardData);
       return;
     }
 
@@ -181,7 +193,7 @@ function IDE() {
         <Canvas
           ref={canvasRef}
           onOpenCompositeWizard={handleOpenCompositeWizard}
-          onOpenControllerWizard={handleOpenControllerWizard}
+          onOpenLinkedWizard={handleOpenLinkedWizard}
         />
       </div>
       <WizardDialog

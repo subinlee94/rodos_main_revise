@@ -21,6 +21,13 @@ function RegistryModules({ expanded, selectedKey, onToggle, onSelect, onContextM
         loadRegistryModules();
     }, [loadRegistryModules]);
 
+    // Workspace에서 모듈 업로드 등 후 목록 갱신
+    useEffect(() => {
+        const onRegistryRefresh = () => loadRegistryModules();
+        window.addEventListener('registry-refresh', onRegistryRefresh);
+        return () => window.removeEventListener('registry-refresh', onRegistryRefresh);
+    }, [loadRegistryModules]);
+
     // 드래그 오버 핸들러
     const handleDragOver = (e) => {
         e.preventDefault();

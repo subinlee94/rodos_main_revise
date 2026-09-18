@@ -1,46 +1,77 @@
 // SWAspects 관련 API 서비스
+import { fetchRegistryJson, normalizeModuleEntry } from '../utils/registryFetch';
+
+function dedupeByModuleId(modules) {
+    const seen = new Set();
+    return modules.filter((module) => {
+        const id = (module.moduleID || '').replace(/-/g, '').toLowerCase();
+        if (!id || seen.has(id)) return false;
+        seen.add(id);
+        return true;
+    });
+}
+
+async function getCanvasSWModules() {
+    try {
+        const response = await fetch('/api/hw-modules');
+        if (!response.ok) return [];
+        const hwList = await response.json();
+        const swList = [];
+        (Array.isArray(hwList) ? hwList : []).forEach((hw) => {
+            const children = Array.isArray(hw?.swModules) ? hw.swModules : [];
+            children.forEach((sw) => {
+                const moduleID = sw?.moduleID || sw?.ref || '';
+                if (!moduleID) return;
+                swList.push(normalizeModuleEntry({
+                    moduleID,
+                    moduleName: sw?.name || moduleID,
+                    moduleType: 'software',
+                    source: 'canvas'
+                }));
+            });
+        });
+        return swList;
+    } catch (error) {
+        console.warn('Canvas SW modules load failed:', error);
+        return [];
+    }
+}
+
 export const swAspectsService = {
-    // Registry에서 SW 모듈 목록 조회 (software classification)
+    // Registry + WorkSpace(Module Info) + 캔버스 SW 목록
     async getSWModules() {
         try {
-            const response = await fetch('/api/registry/all');
-            if (response.ok) {
-                const data = await response.json();
-                return data.software || [];
-            }
-            throw new Error('Failed to fetch SW modules');
+            const data = await fetchRegistryJson('/api/registry/all');
+            const registrySw = (data.software || []).map((module) =>
+                normalizeModuleEntry({ ...module, moduleType: 'software', source: 'registry' })
+            );
+            const canvasSw = await getCanvasSWModules();
+            return dedupeByModuleId([...registrySw, ...canvasSw]);
         } catch (error) {
             console.error('Error fetching SW modules:', error);
-            return [];
+            const canvasSw = await getCanvasSWModules();
+            return dedupeByModuleId(canvasSw);
         }
     },
 
-    // 선택된 SW 모듈들을 ModuleID 형태로 변환
     transformToModuleIDs(selectedModules) {
         return selectedModules.map(module => {
             const moduleID = module.moduleID || '';
-            // moduleID에서 mID와 iID 추출
             const parts = moduleID.split('-');
             let mID, iID;
-            
+
             if (parts.length >= 5) {
-                // 기존 형태: 5개 이상의 부분으로 분리됨
                 mID = parts.slice(0, 4).join('-');
                 iID = parts[4];
             } else if (parts.length === 2) {
-                // 새로운 형태: 2개 부분으로 분리됨 (mID-iID)
                 mID = parts[0];
                 iID = parts[1];
             } else {
-                // 기본값
                 mID = moduleID;
                 iID = '00';
             }
 
-            return {
-                mID: mID,
-                iID: iID
-            };
+            return { mID, iID };
         });
     }
 };

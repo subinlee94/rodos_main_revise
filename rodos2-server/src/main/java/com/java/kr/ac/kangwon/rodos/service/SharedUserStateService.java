@@ -249,9 +249,10 @@ public class SharedUserStateService {
 
                 String moduleName = (String) hw.get("name");
                 String moduleType = (String) hw.get("moduleType");
+                String hwModuleRef = resolveModuleRefFromCanvas(hw, moduleName);
 
                 // ModuleClassifier를 사용해서 실제 분류 결정
-                String moduleId = getModuleId(moduleName);
+                String moduleId = hwModuleRef;
                 String actualClassification = moduleClassifier.classifyModule(moduleId);
 
                 System.out.println("=== 모듈 분류 ===");
@@ -300,7 +301,7 @@ public class SharedUserStateService {
                 if ("cloud".equals(actualClassification)) {
                     CloudInfo cloud = new CloudInfo();
                     cloud.setName(moduleName);
-                    cloud.setRef(getModuleId(moduleName));
+                    cloud.setRef(hwModuleRef);
                     cloud.setType(actualClassification);
 
                     // Cloud 스타일 설정
@@ -318,7 +319,7 @@ public class SharedUserStateService {
                 } else if ("edge".equals(actualClassification)) {
                     EdgeInfo edge = new EdgeInfo();
                     edge.setName(moduleName);
-                    edge.setRef(getModuleId(moduleName));
+                    edge.setRef(hwModuleRef);
                     edge.setType(actualClassification);
 
                     // Edge 스타일 설정
@@ -336,8 +337,12 @@ public class SharedUserStateService {
                 } else { // "robot" 또는 기타
                     RobotInfo robot = new RobotInfo();
                     robot.setName(moduleName);
-                    robot.setRef(getModuleId(moduleName));
+                    robot.setRef(hwModuleRef);
                     robot.setType(actualClassification); // 실제 분류 결과 사용
+                    Object parentRobotRef = hw.get("parentRobotRef");
+                    if (parentRobotRef != null && !parentRobotRef.toString().isBlank()) {
+                        robot.setParentRobotRef(parentRobotRef.toString());
+                    }
 
                     // Robot 스타일 설정
                     Style robotStyle = new Style();
@@ -351,6 +356,21 @@ public class SharedUserStateService {
                     addSWModulesToHW(robot, hw);
 
                     state.getEditors().getSystem().getRobots().add(robot);
+                }
+            }
+        }
+
+        for (RobotInfo controller : state.getEditors().getSystem().getRobots()) {
+            if (!"controller".equalsIgnoreCase(controller.getType()) || controller.getParentRobotRef() == null) {
+                continue;
+            }
+            for (RobotInfo robot : state.getEditors().getSystem().getRobots()) {
+                if ("robot".equalsIgnoreCase(robot.getType())
+                        && (controller.getParentRobotRef().equals(robot.getRef())
+                                || controller.getParentRobotRef().equals(robot.getName()))) {
+                    controller.setTarget(robot.getTarget());
+                    controller.setTargetName(robot.getTargetName());
+                    break;
                 }
             }
         }
@@ -418,6 +438,20 @@ public class SharedUserStateService {
         hwModule.put("name", hwInfo.getName());
         hwModule.put("type", type); // cloud, edge, robot
         hwModule.put("moduleType", hwInfo.getType() != null ? hwInfo.getType() : type); // Canvas.js에서 사용하는 필드
+        if (hwInfo.getRef() != null && !hwInfo.getRef().isBlank()) {
+            hwModule.put("moduleID", hwInfo.getRef());
+            hwModule.put("ref", hwInfo.getRef());
+        }
+        if (hwInfo.getTargetName() != null) {
+            hwModule.put("targetName", hwInfo.getTargetName());
+        }
+        if (hwInfo.getTarget() != null) {
+            hwModule.put("target", hwInfo.getTarget());
+        }
+        if (hwInfo.getParentRobotRef() != null && !hwInfo.getParentRobotRef().isBlank()) {
+            hwModule.put("parentRobotRef", hwInfo.getParentRobotRef());
+            hwModule.put("parentRobotName", hwInfo.getParentRobotRef());
+        }
 
         // HW 모듈의 위치 정보 - 스타일에서 직접 가져오기
         Style hwStyle = hwInfo.getStyle();
@@ -437,6 +471,9 @@ public class SharedUserStateService {
             swModule.put("name", module.getName());
             swModule.put("type", "software");
             swModule.put("moduleType", "software"); // Canvas.js에서 사용하는 필드
+            if (module.getRef() != null && !module.getRef().isBlank()) {
+                swModule.put("moduleID", module.getRef());
+            }
 
             // SW 모듈의 위치 정보 - 스타일에서 직접 가져오기
             Style swStyle = module.getStyle();
@@ -479,9 +516,9 @@ public class SharedUserStateService {
                     @SuppressWarnings("unchecked")
                     java.util.Map<String, Object> sw = (java.util.Map<String, Object>) swModule;
 
-                    // ModuleClassifier를 사용해서 모듈 타입 결정
                     String moduleName = (String) sw.get("name");
-                    String moduleType = moduleClassifier.classifyModule(getModuleId(moduleName));
+                    String swRef = resolveSwModuleRefFromCanvas(sw, moduleName);
+                    String moduleType = moduleClassifier.classifyModule(swRef);
 
                     ModuleInfo module;
                     if ("ai".equals(moduleType)) {
@@ -491,7 +528,7 @@ public class SharedUserStateService {
                     }
 
                     module.setName(moduleName);
-                    module.setRef(getModuleId(moduleName));
+                    module.setRef(swRef);
 
                     // SW 모듈 스타일 설정
                     Style swStyle = new Style();
@@ -713,6 +750,81 @@ public class SharedUserStateService {
     /**
      * 모듈 실행 (Execute 기능) - ExecutorManager 사용
      */
+    /**
+     * Execute 전 캔버스/매핑 상태 검증 (Robot SW moduleID·HW target·Simulation 설정).
+     */
+    public Map<String, Object> validateExecuteReadiness(SharedUserState state) throws IOException {
+        java.util.List<String> errors = new java.util.ArrayList<>();
+        boolean simulationMode = isSimulationExecuteMode(state);
+
+        int totalSwModules = 0;
+        if (state.getEditors() != null && state.getEditors().getSystem() != null) {
+            var robots = state.getEditors().getSystem().getRobots();
+            if (robots != null) {
+                for (RobotInfo robot : robots) {
+                    List<ModuleInfo> modules = robot.getModules();
+                    boolean controller = "controller".equalsIgnoreCase(robot.getType());
+                    if (modules == null || modules.isEmpty()) {
+                        boolean hasLinkedControllerSoftware = !controller && robots.stream().anyMatch(candidate ->
+                                "controller".equalsIgnoreCase(candidate.getType())
+                                        && candidate.getParentRobotRef() != null
+                                        && (candidate.getParentRobotRef().equals(robot.getRef())
+                                                || candidate.getParentRobotRef().equals(robot.getName()))
+                                        && candidate.getModules() != null
+                                        && !candidate.getModules().isEmpty());
+                        if (!controller && !hasLinkedControllerSoftware) {
+                            errors.add("Robot '" + robot.getName()
+                                    + "': 실행할 Software 모듈이 없습니다. Robot 또는 연결된 Controller 위에 SW를 배치하세요.");
+                        }
+                        if (controller) {
+                            continue;
+                        }
+                    } else {
+                        totalSwModules += modules.size();
+                    }
+
+                    if (controller && (robot.getParentRobotRef() == null || robot.getParentRobotRef().isBlank())) {
+                        errors.add("Controller '" + robot.getName() + "': Robot에 연결되지 않았습니다.");
+                    }
+
+                    if (!simulationMode && !controller) {
+                        String target = robot.getTarget();
+                        if (target == null || target.trim().isEmpty()) {
+                            errors.add("Robot '" + robot.getName()
+                                    + "': Mapping with HW에서 Docker Agent target(IP)을 설정하세요.");
+                        }
+                    }
+
+                    for (ModuleInfo sw : modules) {
+                        if (isUnresolvedModuleRef(sw.getRef())) {
+                            errors.add("Software '" + sw.getName() + "' (Robot '" + robot.getName()
+                                    + "'): Registry moduleID(ref)를 확인할 수 없습니다. SW를 Registry에서 다시 드래그하세요.");
+                        }
+                    }
+                }
+            }
+        }
+
+        if (simulationMode) {
+            if (state.getSimulationInfo() == null
+                    || state.getSimulationInfo().getSimulationHwName() == null
+                    || state.getSimulationInfo().getSimulationHwName().trim().isEmpty()) {
+                errors.add("Simulation 모드: Menu → Mapping with Simulation에서 Simulation HW를 설정하세요.");
+            }
+        }
+
+        if (totalSwModules == 0) {
+            errors.add("실행할 Software 모듈이 없습니다. (표준 구성: Robot 육각형 + 그 위 Software 원)");
+        }
+
+        Map<String, Object> result = new java.util.HashMap<>();
+        result.put("valid", errors.isEmpty());
+        result.put("errors", errors);
+        result.put("simulationMode", simulationMode);
+        result.put("swModuleCount", totalSwModules);
+        return result;
+    }
+
     public Map<String, Object> executeModules(SharedUserState state) throws IOException {
         Map<String, Object> result = new java.util.HashMap<>();
         java.util.List<String> executedModules = new java.util.ArrayList<>();
@@ -720,6 +832,20 @@ public class SharedUserStateService {
 
         System.out.println("=== Execute Modules 시작 ===");
         System.out.println("Simulation Mode: " + state.getSimMode());
+
+        Map<String, Object> validation = validateExecuteReadiness(state);
+        if (Boolean.FALSE.equals(validation.get("valid"))) {
+            @SuppressWarnings("unchecked")
+            java.util.List<String> validationErrors = (java.util.List<String>) validation.get("errors");
+            failedModules.addAll(validationErrors);
+            result.put("success", false);
+            result.put("executedModules", executedModules);
+            result.put("failedModules", failedModules);
+            result.put("totalExecuted", 0);
+            result.put("totalFailed", failedModules.size());
+            result.put("validation", validation);
+            return result;
+        }
 
         try {
             // SharedUserState를 Configuration으로 변환
@@ -777,6 +903,48 @@ public class SharedUserStateService {
             binaryStr = "0" + binaryStr;
         }
         return binaryStr;
+    }
+
+    private String resolveModuleRefFromCanvas(java.util.Map<String, Object> hw, String moduleName) {
+        Object moduleId = hw.get("moduleID");
+        if (moduleId != null && !moduleId.toString().trim().isEmpty()) {
+            return moduleId.toString().trim();
+        }
+        Object ref = hw.get("ref");
+        if (ref != null && !ref.toString().trim().isEmpty()) {
+            return ref.toString().trim();
+        }
+        return getModuleId(moduleName);
+    }
+
+    private String resolveSwModuleRefFromCanvas(java.util.Map<String, Object> sw, String moduleName) {
+        Object moduleId = sw.get("moduleID");
+        if (moduleId != null && !moduleId.toString().trim().isEmpty()) {
+            return moduleId.toString().trim();
+        }
+        Object ref = sw.get("ref");
+        if (ref != null && !ref.toString().trim().isEmpty()) {
+            return ref.toString().trim();
+        }
+        return getModuleId(moduleName);
+    }
+
+    private boolean isSimulationExecuteMode(SharedUserState state) {
+        if (Boolean.TRUE.equals(state.getSimMode())) {
+            return true;
+        }
+        return state.getSimulationInfo() != null
+                && state.getSimulationInfo().getSimulationHwName() != null
+                && !state.getSimulationInfo().getSimulationHwName().trim().isEmpty();
+    }
+
+    /** Registry lookup 실패 시 UUID fallback(32 hex, hyphen 없음) */
+    private boolean isUnresolvedModuleRef(String ref) {
+        if (ref == null || ref.trim().isEmpty()) {
+            return true;
+        }
+        String trimmed = ref.trim();
+        return trimmed.length() == 32 && !trimmed.contains("-") && trimmed.matches("[0-9a-fA-F]{32}");
     }
 
     /**

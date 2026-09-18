@@ -85,7 +85,32 @@ export function useModuleProgress() {
 
             if (modules.length === 0) {
                 setIsRunning(false);
+                window.alert(
+                    '실행할 Software 모듈이 없습니다.\n\n' +
+                    '표준 구성: Registry에서 Robot(육각형)을 캔버스에 놓고, ' +
+                    '그 위에 Software 모듈(원)을 드래그한 뒤 Execute 하세요.'
+                );
                 return;
+            }
+
+            if (operation === 'execute') {
+                try {
+                    const validation = await canvasAPI.validateExecute();
+                    if (!validation.valid) {
+                        const lines = Array.isArray(validation.errors) ? validation.errors : [];
+                        window.alert(
+                            'Execute 전 검증에 실패했습니다.\n\n' +
+                            lines.join('\n') +
+                            (validation.simulationMode
+                                ? '\n\n(현재 Simulation 실행 모드로 판단됨)'
+                                : '\n\n(실제 Robot Agent 실행 모드 — Mapping with HW 필요)')
+                        );
+                        setIsRunning(false);
+                        return;
+                    }
+                } catch (validationError) {
+                    console.warn('Execute validation request failed:', validationError);
+                }
             }
 
             // 각 모듈을 pending 상태로 초기화

@@ -14,7 +14,7 @@ function CheckPage({
     if (loading) {
         return (
             <div className="check-page">
-                <h2>XML Preview</h2>
+                <h2>{moduleName ? `${moduleName} XML Preview` : 'XML Preview'}</h2>
                 <div className="xml-preview-desc">Loading XML from backend...</div>
             </div>
         );
@@ -23,7 +23,7 @@ function CheckPage({
     if (error) {
         return (
             <div className="check-page">
-                <h2>XML Preview</h2>
+                <h2>{moduleName ? `${moduleName} XML Preview` : 'XML Preview'}</h2>
                 <div className="xml-preview-desc">Error: {error}</div>
                 <button onClick={fetchXMLFromBackend} className="save-xml-btn">
                     Retry
@@ -34,7 +34,7 @@ function CheckPage({
 
     return (
         <div className="check-page">
-            <h2>XML Preview</h2>
+            <h2>{moduleName ? `${moduleName} XML Preview` : 'XML Preview'}</h2>
             <div className="xml-preview-area">
                 <pre>{xml}</pre>
             </div>

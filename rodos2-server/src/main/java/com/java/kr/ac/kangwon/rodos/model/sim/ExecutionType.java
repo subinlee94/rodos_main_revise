@@ -12,6 +12,10 @@ public class ExecutionType {
 	@JacksonXmlProperty(localName = xmlTagNames.OPTYPE)
 	private Enumerate.OpTypes opType;
 
+	/** ISO/WorkSpace IM XML은 {@code opType} (camelCase)를 사용하는 경우가 많다. */
+	@JacksonXmlProperty(localName = "opType")
+	private String opTypeRaw;
+
 	@JacksonXmlProperty(localName = xmlTagNames.HARD_RT)
 	private String hardRT;
 
@@ -34,7 +38,31 @@ public class ExecutionType {
 	}
 
 	public Enumerate.OpTypes getOPType() {
-		return opType;
+		if (opType != null) {
+			return opType;
+		}
+		return parseOpType(opTypeRaw);
+	}
+
+	private static Enumerate.OpTypes parseOpType(String raw) {
+		if (raw == null || raw.isBlank()) {
+			return null;
+		}
+		String normalized = raw.trim().toUpperCase().replace(" ", "").replace("_", "");
+		if ("EVENTDRIVEN".equals(normalized)) {
+			return Enumerate.OpTypes.EVENTDRIVEN;
+		}
+		if ("PERIODIC".equals(normalized)) {
+			return Enumerate.OpTypes.PERIODIC;
+		}
+		if ("NONRT".equals(normalized)) {
+			return Enumerate.OpTypes.NONRT;
+		}
+		try {
+			return Enumerate.OpTypes.valueOf(normalized);
+		} catch (IllegalArgumentException ignored) {
+			return null;
+		}
 	}
 
 	public Enumerate.InstanceTypes getInstanceType() {

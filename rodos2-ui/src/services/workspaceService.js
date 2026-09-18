@@ -52,7 +52,8 @@ export const workspaceService = {
             if (response.ok) {
                 return true;
             } else {
-                throw new Error('Delete failed');
+                const errorText = await response.text();
+                throw new Error(errorText || `Delete failed (${response.status})`);
             }
         } catch (error) {
             console.error('Error deleting file:', error);
@@ -103,25 +104,33 @@ export const workspaceService = {
                 key: 'module-info',
                 label: 'Module Info',
                 type: 'directory',
-                children: moduleInfo.map(file => ({
-                    key: file.key,
-                    label: file.label,
-                    type: 'file',
-                    fileType: file.label.endsWith('.xml') ? 'xml' : 'other',
-                    path: file.path
-                }))
+                children: moduleInfo.map(file => {
+                    const lower = String(file.label || '').toLowerCase();
+                    const fileType = lower.endsWith('.xml') ? 'xml' : lower.endsWith('.json') ? 'json' : 'other';
+                    return {
+                        key: file.key,
+                        label: file.label,
+                        type: 'file',
+                        fileType,
+                        path: file.path
+                    };
+                })
             },
             {
                 key: 'canvas-configuration',
                 label: 'Canvas Configuration',
                 type: 'directory',
-                children: appConfiguration.map(file => ({
-                    key: file.key,
-                    label: file.label,
-                    type: 'file',
-                    fileType: file.label.endsWith('.xml') ? 'xml' : 'other',
-                    path: file.path
-                }))
+                children: appConfiguration.map(file => {
+                    const lower = String(file.label || '').toLowerCase();
+                    const fileType = lower.endsWith('.xml') ? 'xml' : lower.endsWith('.json') ? 'json' : 'other';
+                    return {
+                        key: file.key,
+                        label: file.label,
+                        type: 'file',
+                        fileType,
+                        path: file.path
+                    };
+                })
             }
         ];
     },

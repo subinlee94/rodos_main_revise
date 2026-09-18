@@ -19,9 +19,9 @@ public interface IMRegistryApi {
 	IM getIM(String moduleId);
 
 	/**
-	 * 새 모듈 등록
+	 * 새 모듈 등록 (원격 레지스트리 및 필요 시 로컬 대체 저장)
 	 */
-	boolean doUploadIM(IM informationModel);
+	ImUploadResult doUploadIM(IM informationModel);
 
 	/**
 	 * 모듈 삭제

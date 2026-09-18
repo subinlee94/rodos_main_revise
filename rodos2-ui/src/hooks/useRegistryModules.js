@@ -1,5 +1,34 @@
 import { useState, useCallback } from 'react';
 
+/** 원격 레지스트리가 느리거나 멈추면 fetch가 무한 대기하므로 상한을 둔다. */
+const REGISTRY_ALL_TIMEOUT_MS = 28000;
+
+async function fetchRegistryAll() {
+    const controller = new AbortController();
+    const timer = window.setTimeout(() => controller.abort(), REGISTRY_ALL_TIMEOUT_MS);
+    try {
+        return await fetch('/api/registry/all', { signal: controller.signal });
+    } finally {
+        window.clearTimeout(timer);
+    }
+}
+
+/** Spring IM JSON은 snake_case(module_id, module_name) — wizard 쪽은 camelCase 혼용 */
+function normalizeRegistryModule(module) {
+    if (!module || typeof module !== 'object') {
+        return { moduleID: '', moduleName: '', classification: '', status: undefined, lastModified: undefined };
+    }
+    const moduleID = module.moduleID ?? module.module_id ?? '';
+    const moduleName = module.moduleName ?? module.module_name ?? '';
+    return {
+        moduleID,
+        moduleName,
+        classification: module.classification ?? '',
+        status: module.status,
+        lastModified: module.lastModified ?? module.last_modified
+    };
+}
+
 export function useRegistryModules() {
     const [registryModules, setRegistryModules] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -11,7 +40,7 @@ export function useRegistryModules() {
             setLoading(true);
 
             // Registry에서 모든 모듈을 가져와서 자동으로 분류
-            const response = await fetch('/api/registry/all');
+            const response = await fetchRegistryAll();
             if (response.ok) {
                 const data = await response.json();
 
@@ -21,90 +50,108 @@ export function useRegistryModules() {
                         label: 'AI Modules',
                         type: 'directory',
                         moduleType: 'ai',
-                        children: (data.ai || []).map(module => ({
-                            key: module.moduleID,
-                            label: module.moduleName,
-                            type: 'module',
-                            moduleType: 'ai',
-                            classification: module.classification,
-                            status: module.status,
-                            lastModified: module.lastModified
-                        }))
+                        children: (data.ai || []).map(module => {
+                            const m = normalizeRegistryModule(module);
+                            return {
+                                key: m.moduleID,
+                                label: m.moduleName,
+                                type: 'module',
+                                moduleType: 'ai',
+                                classification: m.classification,
+                                status: m.status,
+                                lastModified: m.lastModified
+                            };
+                        })
                     },
                     {
                         key: 'software-modules',
                         label: 'Software Modules',
                         type: 'directory',
                         moduleType: 'software',
-                        children: (data.software || []).map(module => ({
-                            key: module.moduleID,
-                            label: module.moduleName,
-                            type: 'module',
-                            moduleType: 'software',
-                            classification: module.classification,
-                            status: module.status,
-                            lastModified: module.lastModified
-                        }))
+                        children: (data.software || []).map(module => {
+                            const m = normalizeRegistryModule(module);
+                            return {
+                                key: m.moduleID,
+                                label: m.moduleName,
+                                type: 'module',
+                                moduleType: 'software',
+                                classification: m.classification,
+                                status: m.status,
+                                lastModified: m.lastModified
+                            };
+                        })
                     },
                     {
                         key: 'robot-modules',
                         label: 'Robot Modules',
                         type: 'directory',
                         moduleType: 'robot',
-                        children: (data.robot || []).map(module => ({
-                            key: module.moduleID,
-                            label: module.moduleName,
-                            type: 'module',
-                            moduleType: 'robot',
-                            classification: module.classification,
-                            status: module.status,
-                            lastModified: module.lastModified
-                        }))
+                        children: (data.robot || []).map(module => {
+                            const m = normalizeRegistryModule(module);
+                            return {
+                                key: m.moduleID,
+                                label: m.moduleName,
+                                type: 'module',
+                                moduleType: 'robot',
+                                classification: m.classification,
+                                status: m.status,
+                                lastModified: m.lastModified
+                            };
+                        })
                     },
                     {
                         key: 'edge-modules',
                         label: 'Edge',
                         type: 'directory',
                         moduleType: 'edge',
-                        children: (data.edge || []).map(module => ({
-                            key: module.moduleID,
-                            label: module.moduleName,
-                            type: 'module',
-                            moduleType: 'edge',
-                            classification: module.classification,
-                            status: module.status,
-                            lastModified: module.lastModified
-                        }))
+                        children: (data.edge || []).map(module => {
+                            const m = normalizeRegistryModule(module);
+                            return {
+                                key: m.moduleID,
+                                label: m.moduleName,
+                                type: 'module',
+                                moduleType: 'edge',
+                                classification: m.classification,
+                                status: m.status,
+                                lastModified: m.lastModified
+                            };
+                        })
                     },
                     {
                         key: 'cloud-modules',
                         label: 'Cloud',
                         type: 'directory',
                         moduleType: 'cloud',
-                        children: (data.cloud || []).map(module => ({
-                            key: module.moduleID,
-                            label: module.moduleName,
-                            type: 'module',
-                            moduleType: 'cloud',
-                            classification: module.classification,
-                            status: module.status,
-                            lastModified: module.lastModified
-                        }))
+                        children: (data.cloud || []).map(module => {
+                            const m = normalizeRegistryModule(module);
+                            return {
+                                key: m.moduleID,
+                                label: m.moduleName,
+                                type: 'module',
+                                moduleType: 'cloud',
+                                classification: m.classification,
+                                status: m.status,
+                                lastModified: m.lastModified
+                            };
+                        })
                     },
                     {
                         key: 'controller-modules',
                         label: 'Controller',
                         type: 'directory',
                         moduleType: 'controller',
-                        children: (data.controller || []).map(module => ({
-                            key: module.moduleID,
-                            label: module.moduleName,
-                            type: 'module',
-                            moduleType: 'controller',
-                            classification: module.classification,
-                            status: module.status,
-                            lastModified: module.lastModified
-                        }))
+                        children: (data.controller || []).map(module => {
+                            const m = normalizeRegistryModule(module);
+                            return {
+                                key: m.moduleID,
+                                label: m.moduleName,
+                                type: 'module',
+                                moduleType: 'controller',
+                                classification: m.classification,
+                                status: m.status,
+                                lastModified: m.lastModified
+                            };
+                        })
                     }
                 ];
 
@@ -114,7 +161,13 @@ export function useRegistryModules() {
                 setRegistryModules([]);
             }
         } catch (error) {
-            console.error('Error loading registry modules:', error);
+            if (error.name === 'AbortError') {
+                console.warn(
+                    `Registry /api/registry/all timed out after ${REGISTRY_ALL_TIMEOUT_MS}ms — showing empty lists. Check network or IIC registry.`
+                );
+            } else {
+                console.error('Error loading registry modules:', error);
+            }
             setRegistryModules([]);
         } finally {
             setLoading(false);
@@ -144,12 +197,22 @@ export function useRegistryModules() {
                 moduleID: node.key || ''
             }));
             e.dataTransfer.effectAllowed = 'copy';
+        } else if (node.moduleType === 'robot') {
+            // Robot Modules -> Robot 모듈 (육각형 + linked SW wizard)
+            e.dataTransfer.setData('text/plain', JSON.stringify({
+                type: 'robot',
+                name: node.label,
+                moduleType: node.moduleType,
+                moduleID: node.key || ''
+            }));
+            e.dataTransfer.effectAllowed = 'copy';
         } else {
             // Edge, Cloud -> HW 모듈 (육각형)
             e.dataTransfer.setData('text/plain', JSON.stringify({
                 type: 'hw',
                 name: node.label,
-                moduleType: node.moduleType
+                moduleType: node.moduleType,
+                moduleID: node.key || ''
             }));
             e.dataTransfer.effectAllowed = 'copy';
         }

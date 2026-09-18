@@ -1,4 +1,10 @@
-/* IDnTypePage 전용 스타일 (GenInfoPage와 통일) */
+.section-hint {
+    font-size: 13px;
+    color: #555;
+    margin: 0 0 12px 0;
+    line-height: 1.5;
+}
+
 .idntype-page {
     display: flex;
     font-family: 'Noto Sans', sans-serif;
@@ -121,20 +127,21 @@
     border-bottom: 1px solid #d1e7ff;
 }
 
+/* Column order: Action | Name | Module ID */
 .sw-modules-table th:nth-child(1) {
-    width: 30%;
-    min-width: 120px;
+    width: 18%;
+    min-width: 88px;
 }
 
 .sw-modules-table th:nth-child(2) {
-    width: 50%;
-    min-width: 200px;
-    max-width: 300px;
+    width: 32%;
+    min-width: 120px;
 }
 
 .sw-modules-table th:nth-child(3) {
-    width: 20%;
-    min-width: 80px;
+    width: 50%;
+    min-width: 160px;
+    max-width: 320px;
 }
 
 .sw-modules-table td {
@@ -144,7 +151,8 @@
     vertical-align: middle;
 }
 
-.sw-modules-table td:nth-child(2) {
+/* Module ID column (3rd) */
+.sw-modules-table td:nth-child(3) {
     max-width: 400px;
     overflow: hidden;
     text-overflow: ellipsis;

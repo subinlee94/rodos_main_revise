@@ -1,59 +1,118 @@
-## RODOS2
+# RODOS2
 
-### Robot Organization & DistributiOn System  
-### Robot Orchestration & DistributiOn System  
-### Robot cOmposition & DistributiOn System  
+Robot Organization/Orchestration/Composition & DistributiOn System.
 
----
+현재 버전은 Robot/Controller–Software 정보 모델 연결, WorkSpace/Registry 연동, 선택적 Properties·I/O·Services import, Execute 사전 검증을 보완한 버전이다.
 
-## 사용 방법
+## 프로젝트 구조
 
-### 1. rodos2-ui (프론트엔드)
-
-**설치 및 실행**
-
-```bash
-cd rodos2-ui
-npm install
-npm start         # 개발 서버 실행 (http://localhost:3000)
-# 또는
-npm run build     # 프로덕션 빌드
+```text
+rodos2-main/
+  rodos2-ui/       React UI
+  rodos2-server/   Spring Boot server
+  document/        사용·설계·보고 문서
+  HANDOVER.md      원본 대비 변경 내용과 수정 의도
+  CHANGELOG.md     변경 요약
 ```
 
----
+## 요구 환경
 
-### 2. rodos2-server (백엔드)
+- Java 17
+- Node.js 18 또는 20 LTS 권장
+- npm
 
-**설치 및 실행**
+## 실행 방법
+
+### 1. UI 설치 및 빌드
+
+Windows PowerShell:
+
+```powershell
+cd rodos2-ui
+npm install
+npm run build
+```
+
+`npm run build`는 React build를 생성한 후 서버의 `src/main/resources/static`으로 복사한다.
+
+개발 서버만 실행하려면:
+
+```powershell
+npm start
+```
+
+개발 UI는 보통 `http://localhost:3000`에서 실행된다.
+
+### 2. Spring Boot 서버 실행
+
+Windows:
+
+```powershell
+cd rodos2-server
+.\gradlew.bat bootRun
+```
+
+macOS/Linux:
 
 ```bash
 cd rodos2-server
-./mvnw spring-boot:run
-# 또는
-mvn spring-boot:run
+./gradlew bootRun
 ```
-- 또는 Visual Studio Code 등에서 Run 기능을 사용해도 됩니다.
-- 서버는 기본적으로 [http://localhost:8080](http://localhost:8080)에서 실행됩니다.
 
----
+### 3. 접속
 
-### 3. 전체 실행 순서
+```text
+http://localhost:8080/app
+```
 
-1. **프론트엔드 빌드**
-    - `rodos2-ui` 디렉토리에서 React 앱을 빌드합니다.
-2. **백엔드 서버 실행**
-    - `rodos2-server` 디렉토리에서 Spring Boot 서버를 실행합니다.
-3. **접속**
-    - 브라우저에서 [http://localhost:8080/app](http://localhost:8080/app)으로 접속하여 실행된 것을 확인할 수 있습니다.
+## 테스트
 
----
+서버:
 
-### 4. 기타
+```powershell
+cd rodos2-server
+.\gradlew.bat test
+```
 
-- **개발 환경**:  
-  - Node.js 16+
-  - Java 17+ (OpenJDK 권장)
-  - Spring Boot
-  - React.js
+UI:
 
----
+```powershell
+cd rodos2-ui
+npm test -- --watchAll=false
+```
+
+현재 UI에는 ESLint 경고와 Jest/React Router resolve 문제가 남아 있다. 검증 결과와 제한사항은 [HANDOVER.md](HANDOVER.md)를 참고한다.
+
+## 주요 문서
+
+- [인수인계 문서](HANDOVER.md)
+- [변경 기록](CHANGELOG.md)
+- [GitHub 전달용 PR 설명](document/GITHUB_HANDOVER.md)
+- [초보자 실행 안내](document/RODOS2_구글드라이브_실행_접속_안내.md)
+- [Robot Execute 쉬운 설명](document/ROBOT_EXECUTE_쉬운설명.md)
+- [1차 수정 보고](document/교수님_보고용_프로그램_수정내역.md)
+- [2차 수정 보고](document/교수님_보고용_프로그램_수정내역_2차보고.md)
+
+## Registry 설정
+
+다음 값은 `rodos2-server/src/main/resources/application.properties`에서 변경한다.
+
+```properties
+rodos.registry.base-url=http://iic-api.kangwon.ac.kr:8008
+rodos.registry.local-fallback=true
+rodos.registry.connect-timeout-ms=1500
+rodos.registry.read-timeout-ms=3000
+rodos.registry.list-cache-ttl-ms=30000
+```
+
+원격 Registry가 연결되지 않고 local fallback이 켜져 있으면 모듈은 `.rodos/local-registry/modules.json`에 저장된다.
+
+## GitHub 업로드 전 주의
+
+루트 `.gitignore`를 먼저 적용한다. 특히 다음 항목은 커밋하지 않는다.
+
+- `node_modules`
+- `rodos2-server/.gradle`, `build`, `bin`
+- `.edge-manual-profile`, `.codex-temp`
+- 로컬 Registry 및 현재 실행 상태
+- 임시 JSON과 로그

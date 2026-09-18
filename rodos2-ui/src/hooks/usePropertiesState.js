@@ -25,6 +25,16 @@ const createPropertiesData = (propertyNodes, osType, compilerType, executionType
     };
 };
 
+const normalizeNoBit = (bitValue) => {
+    if (!bitValue || typeof bitValue !== 'string') return bitValue || '';
+    const map = {
+        _16: 'BIT16',
+        _32: 'BIT32',
+        _64: 'BIT64'
+    };
+    return map[bitValue] || bitValue;
+};
+
 export function usePropertiesState(properties, onChange) {
     const [activeTab, setActiveTab] = useState('property');
     const [typeInput, setTypeInput] = useState('');
@@ -68,7 +78,10 @@ export function usePropertiesState(properties, onChange) {
             setPropertyNodes(treeData);
 
             // 각 탭 데이터 초기화
-            setOsType(properties.osType || {});
+            setOsType({
+                ...(properties.osType || {}),
+                bit: normalizeNoBit(properties?.osType?.bit || '')
+            });
             setCompilerType(properties.compilerType || {});
             // ExecutionType 데이터 구조 정규화
             const normalizedExecutionTypes = (properties.executionTypes || []).map(et => ({
@@ -267,7 +280,8 @@ export function usePropertiesState(properties, onChange) {
     const handleOsTypeChange = useCallback((e) => {
         const { name, value } = e.target;
         setOsType(prev => {
-            const newOsType = { ...prev, [name]: value };
+            const normalizedValue = name === 'bit' ? normalizeNoBit(value) : value;
+            const newOsType = { ...prev, [name]: normalizedValue };
             // 즉시 ModuleState에 전체 Properties 데이터 전송
             const propertiesData = createPropertiesData(propertyNodes, newOsType, compilerType, executionTypes, libraries, organization);
             if (lastOnChangeRef.current) {
@@ -484,6 +498,43 @@ export function usePropertiesState(properties, onChange) {
         return expandedNodes.has(pathKey);
     }, [expandedNodes]);
 
+    /** 외부(SW linked-data)에서 가져온 properties 블록을 모든 탭에 반영 */
+    const importPropertiesBundle = useCallback((bundle) => {
+        if (!bundle) return;
+
+        const treeData = propertiesToTree(bundle);
+        setPropertyNodes(treeData);
+
+        const nextOs = {
+            ...(bundle.osType || {}),
+            bit: normalizeNoBit(bundle?.osType?.bit || '')
+        };
+        setOsType(nextOs);
+        setCompilerType(bundle.compilerType || {});
+
+        const normalizedExecutionTypes = (bundle.executionTypes || []).map((et) => ({
+            optype: et?.optype || et?.opType || '',
+            priority: et?.priority || '',
+            hardRT: et?.hardRT || '',
+            timeConstraint: et?.timeConstraint || '',
+            instanceType: et?.instanceType || ''
+        }));
+        setExecutionTypes(normalizedExecutionTypes);
+        setLibraries(bundle.libraries || []);
+        setOrganization(bundle.organization || {});
+
+        if (lastOnChangeRef.current) {
+            lastOnChangeRef.current(createPropertiesData(
+                treeData,
+                nextOs,
+                bundle.compilerType || {},
+                normalizedExecutionTypes,
+                bundle.libraries || [],
+                bundle.organization || {}
+            ));
+        }
+    }, []);
+
     // 트리 구조 디버깅 함수
     const debugTreeStructure = useCallback(() => {
         console.log('=== Current Tree Structure ===');
@@ -541,6 +592,9 @@ export function usePropertiesState(properties, onChange) {
         toggleNodeExpansion,
         isNodeExpanded,
         handleTreeAreaClick,
+
+        // SW 계승 — 전체 properties 블록 반영
+        importPropertiesBundle,
 
         // 상태 설정 함수
         setTypeInput,

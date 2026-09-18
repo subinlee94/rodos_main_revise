@@ -9,6 +9,7 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
+import java.util.concurrent.CompletableFuture;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -24,9 +25,13 @@ import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.multipart.MultipartFile;
 
 import com.java.kr.ac.kangwon.rodos.model.sim.SoftwareModule;
+import com.java.kr.ac.kangwon.rodos.model.cim.ModuleID;
 import com.java.kr.ac.kangwon.rodos.service.ModuleClassifier;
+import com.java.kr.ac.kangwon.rodos.service.PropertiesMapSerializer;
+import com.java.kr.ac.kangwon.rodos.service.WorkspaceImService;
 import com.java.kr.ac.kangwon.rodos.service.rest.informationModel.IM;
 import com.java.kr.ac.kangwon.rodos.service.rest.informationModel.IMRegistryApi;
+import com.java.kr.ac.kangwon.rodos.service.rest.informationModel.ImUploadResult;
 
 /**
  * IM Registry REST API Controller
@@ -43,8 +48,12 @@ public class IMRegistryController {
     @Autowired
     private ModuleClassifier moduleClassifier;
 
+    @Autowired
+    private WorkspaceImService workspaceImService;
+
     public static class LinkedModuleAspectsRequest {
         private List<Map<String, String>> swAspects;
+        private List<Map<String, String>> hwAspects;
 
         public List<Map<String, String>> getSwAspects() {
             return swAspects;
@@ -53,7 +62,19 @@ public class IMRegistryController {
         public void setSwAspects(List<Map<String, String>> swAspects) {
             this.swAspects = swAspects;
         }
+
+        public List<Map<String, String>> getHwAspects() {
+            return hwAspects;
+        }
+
+        public void setHwAspects(List<Map<String, String>> hwAspects) {
+            this.hwAspects = hwAspects;
+        }
     }
+
+    /** A selectable source module, optionally nested below a selected HW/controller module. */
+    private record LinkedAspect(Map<String, String> aspect, String parentModuleID, String parentModuleName,
+            String sourceType) {}
 
     /**
      * 모든 모듈을 가져와서 자동으로 분류하여 반환
@@ -62,24 +83,33 @@ public class IMRegistryController {
     public ResponseEntity<Object> getAllModules() {
         try {
             // 각 분류별로 직접 호출하여 모듈 목록 조회
-            List<IM> aiModules = registryService.getListIM("ai");
+            CompletableFuture<List<IM>> aiFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("ai"));
+            CompletableFuture<List<IM>> softwareFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("software"));
+            CompletableFuture<List<IM>> controllerFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("controller"));
+            CompletableFuture<List<IM>> robotFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("robot"));
+            CompletableFuture<List<IM>> edgeFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("edge"));
+            CompletableFuture<List<IM>> cloudFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("cloud"));
+
+            CompletableFuture.allOf(aiFuture, softwareFuture, controllerFuture, robotFuture, edgeFuture, cloudFuture).join();
+
+            List<IM> aiModules = aiFuture.join();
             System.out.println("AI 모듈 개수: " + aiModules.size());
 
-            List<IM> softwareModules = registryService.getListIM("software");
+            List<IM> softwareModules = softwareFuture.join();
             System.out.println("Software 모듈 개수: " + softwareModules.size());
 
-            List<IM> controllerModules = registryService.getListIM("controller");
+            List<IM> controllerModules = controllerFuture.join();
             System.out.println("Controller 모듈 개수: " + controllerModules.size());
             // 하위 호환: 기존 robot 분류에 남아있는 데이터도 controller로 합쳐서 반환
-            List<IM> legacyRobotModules = registryService.getListIM("robot");
+            List<IM> legacyRobotModules = robotFuture.join();
             System.out.println("Legacy Robot 모듈 개수: " + legacyRobotModules.size());
             List<IM> mergedControllerModules = new ArrayList<>(controllerModules);
             mergedControllerModules.addAll(legacyRobotModules);
 
-            List<IM> edgeModules = registryService.getListIM("edge");
+            List<IM> edgeModules = edgeFuture.join();
             System.out.println("Edge 모듈 개수: " + edgeModules.size());
 
-            List<IM> cloudModules = registryService.getListIM("cloud");
+            List<IM> cloudModules = cloudFuture.join();
             System.out.println("Cloud 모듈 개수: " + cloudModules.size());
 
             // ModuleClassifier를 사용하여 controller와 robot으로 재분류
@@ -98,6 +128,24 @@ public class IMRegistryController {
                 } else {
                     // moduleID가 없으면 기본적으로 controller로 분류
                     classifiedControllerModules.add(module);
+                }
+            }
+
+            // WorkSpace/Module Info XML — Registry에 없는 로컬 IM도 목록에 포함
+            for (IM ws : workspaceImService.listAll()) {
+                String moduleID = ws.getModuleID();
+                if (moduleID == null || moduleID.isEmpty()) {
+                    continue;
+                }
+                String classification = moduleClassifier.classifyModule(moduleID);
+                switch (classification) {
+                    case "ai" -> addUniqueIm(aiModules, ws);
+                    case "edge" -> addUniqueIm(edgeModules, ws);
+                    case "cloud" -> addUniqueIm(cloudModules, ws);
+                    case "robot" -> addUniqueIm(robotModules, ws);
+                    case "controller" -> addUniqueIm(classifiedControllerModules, ws);
+                    case "software" -> addUniqueIm(softwareModules, ws);
+                    default -> addUniqueIm(softwareModules, ws);
                 }
             }
 
@@ -214,7 +262,9 @@ public class IMRegistryController {
             response.put("description", moduleData.getDescription());
             response.put("examples", moduleData.getExamples());
             response.put("idnType", moduleData.getIdnType() != null ? moduleData.getIdnType() : new HashMap<>());
-            response.put("properties", moduleData.getProperties() != null ? moduleData.getProperties() : new HashMap<>());
+            response.put("properties", moduleData.getProperties() != null
+                    ? PropertiesMapSerializer.toMap(moduleData.getProperties())
+                    : new HashMap<>());
             response.put("ioVariables", moduleData.getIoVariables() != null ? moduleData.getIoVariables() : new HashMap<>());
             response.put("services", moduleData.getServices() != null ? moduleData.getServices() : new HashMap<>());
             response.put("infrastructure", moduleData.getInfrastructure() != null ? moduleData.getInfrastructure() : new HashMap<>());
@@ -246,27 +296,29 @@ public class IMRegistryController {
             System.out.println("linked-data api 요청 데이터 로깅 실패: " + logError.getMessage());
         }
         try {
-            List<Map<String, String>> swAspects = request != null ? request.getSwAspects() : null;
-            if (swAspects == null || swAspects.isEmpty()) {
-                return ResponseEntity.badRequest().body("swAspects is required");
+            List<LinkedAspect> linkedAspects = resolveLinkedAspects(request);
+            if (linkedAspects.isEmpty()) {
+                return ResponseEntity.badRequest().body("swAspects or hwAspects is required");
             }
 
             List<Map<String, Object>> modules = new ArrayList<>();
 
-            for (Map<String, String> aspect : swAspects) {
+            for (LinkedAspect linkedAspect : linkedAspects) {
+                Map<String, String> aspect = linkedAspect.aspect();
                 String mID = aspect != null ? aspect.get("mID") : null;
                 String iID = aspect != null ? aspect.get("iID") : null;
                 if (mID == null || mID.trim().isEmpty()) continue;
 
                 String safeIID = (iID == null || iID.trim().isEmpty()) ? "00" : iID.trim();
                 String hyphenModuleId = mID + "-" + safeIID;
-                String plainModuleId = mID + safeIID;
 
-                IM im = registryService.getIM(hyphenModuleId);
-                if (im == null) im = registryService.getIM(plainModuleId);
+                IM im = getIMByFlexibleId(hyphenModuleId);
 
                 Map<String, Object> moduleInfo = new LinkedHashMap<>();
                 moduleInfo.put("requestedModuleID", hyphenModuleId);
+                moduleInfo.put("parentModuleID", linkedAspect.parentModuleID());
+                moduleInfo.put("parentModuleName", linkedAspect.parentModuleName());
+                moduleInfo.put("sourceType", linkedAspect.sourceType());
 
                 if (im == null) {
                     moduleInfo.put("found", false);
@@ -285,7 +337,9 @@ public class IMRegistryController {
                 moduleInfo.put("moduleID", im.getModuleID());
                 moduleInfo.put("services", moduleData.getServices() != null ? moduleData.getServices() : new HashMap<>());
                 moduleInfo.put("ioVariables", moduleData.getIoVariables() != null ? moduleData.getIoVariables() : new HashMap<>());
-                moduleInfo.put("properties", moduleData.getProperties() != null ? moduleData.getProperties() : new HashMap<>());
+                moduleInfo.put("properties", moduleData.getProperties() != null
+                        ? PropertiesMapSerializer.toMap(moduleData.getProperties())
+                        : new HashMap<>());
                 modules.add(moduleInfo);
             }
 
@@ -334,7 +388,110 @@ public class IMRegistryController {
             if (hyphenCandidate != null) return hyphenCandidate;
         }
 
-        return null;
+        return workspaceImService.findByModuleId(trimmed);
+    }
+
+    private void addUniqueIm(List<IM> target, IM candidate) {
+        if (target == null || candidate == null || candidate.getModuleID() == null) {
+            return;
+        }
+        String candidateKey = candidate.getModuleID().replace("-", "").toLowerCase();
+        for (IM existing : target) {
+            if (existing.getModuleID() != null
+                    && existing.getModuleID().replace("-", "").equalsIgnoreCase(candidateKey)) {
+                return;
+            }
+        }
+        target.add(candidate);
+    }
+
+    /**
+     * Returns selected SW modules and selected HW/controller modules. SW children of a
+     * controller are retained under that controller so the UI does not lose provenance.
+     */
+    private List<LinkedAspect> resolveLinkedAspects(LinkedModuleAspectsRequest request) {
+        List<LinkedAspect> resolved = new ArrayList<>();
+        java.util.Set<String> directSeen = new java.util.HashSet<>();
+
+        if (request != null && request.getSwAspects() != null) {
+            for (Map<String, String> aspect : request.getSwAspects()) {
+                addUniqueLinkedAspect(resolved, directSeen, aspect, null, null, "software");
+            }
+        }
+
+        if (request != null && request.getHwAspects() != null) {
+            for (Map<String, String> hwAspect : request.getHwAspects()) {
+                String moduleId = aspectToHyphenModuleId(hwAspect);
+                if (moduleId == null) continue;
+
+                IM im = getIMByFlexibleId(moduleId);
+                if (im == null) continue;
+
+                String parentName = im.getModuleName() != null ? im.getModuleName() : moduleId;
+                addUniqueLinkedAspect(resolved, directSeen, hwAspect, null, null, "hardware");
+
+                SoftwareModule parentData = moduleClassifier.xmlToSoftwareModuleSafe(
+                        im.getXmlString(), im.getModuleName());
+                if (parentData.getIdnType() == null || parentData.getIdnType().getSwAspects() == null) {
+                    continue;
+                }
+                List<ModuleID> childIds = parentData.getIdnType().getSwAspects().getModuleIDs();
+                if (childIds == null) continue;
+                java.util.Set<String> childSeen = new java.util.HashSet<>();
+                for (ModuleID child : childIds) {
+                    if (child == null) continue;
+                    Map<String, String> childAspect = new LinkedHashMap<>();
+                    childAspect.put("mID", child.getmID() != null ? child.getmID() : "");
+                    childAspect.put("iID", child.getiID() != null ? child.getiID() : "00");
+                    // Do not globally deduplicate children: the same SW module can belong to
+                    // different controller instances and must remain selectable in each branch.
+                    addUniqueLinkedAspect(resolved, childSeen, childAspect,
+                            moduleId, parentName, "software");
+                }
+            }
+        }
+
+        return resolved;
+    }
+
+    private void addUniqueLinkedAspect(List<LinkedAspect> target, java.util.Set<String> seen,
+            Map<String, String> aspect, String parentModuleID, String parentModuleName, String sourceType) {
+        if (aspect == null) return;
+        String mID = aspect.get("mID");
+        if (mID == null || mID.trim().isEmpty()) return;
+        String iID = aspect.get("iID");
+        String safeIID = (iID == null || iID.trim().isEmpty()) ? "00" : iID.trim();
+        String key = (mID + safeIID).replace("-", "").toLowerCase();
+        if (!seen.add(key)) return;
+        Map<String, String> copy = new LinkedHashMap<>();
+        copy.put("mID", mID.trim());
+        copy.put("iID", safeIID);
+        target.add(new LinkedAspect(copy, parentModuleID, parentModuleName, sourceType));
+    }
+
+    private void addUniqueAspect(List<Map<String, String>> merged, java.util.Set<String> seen,
+            Map<String, String> aspect) {
+        if (aspect == null) return;
+        String mID = aspect.get("mID");
+        if (mID == null || mID.trim().isEmpty()) return;
+        String iID = aspect.get("iID");
+        String safeIID = (iID == null || iID.trim().isEmpty()) ? "00" : iID.trim();
+        String key = (mID + safeIID).replace("-", "").toLowerCase();
+        if (seen.contains(key)) return;
+        seen.add(key);
+        Map<String, String> copy = new LinkedHashMap<>();
+        copy.put("mID", mID.trim());
+        copy.put("iID", safeIID);
+        merged.add(copy);
+    }
+
+    private String aspectToHyphenModuleId(Map<String, String> aspect) {
+        if (aspect == null) return null;
+        String mID = aspect.get("mID");
+        if (mID == null || mID.trim().isEmpty()) return null;
+        String iID = aspect.get("iID");
+        String safeIID = (iID == null || iID.trim().isEmpty()) ? "00" : iID.trim();
+        return mID.trim() + "-" + safeIID;
     }
 
 
@@ -418,12 +575,22 @@ public class IMRegistryController {
             String detectedClassification = moduleClassifier.classifyModule(im.getModuleID());
             im.setClassification(detectedClassification);
 
-            boolean success = registryService.doUploadIM(im);
-            if (success) {
-                String message = "Module file uploaded and registered successfully: " + file.getOriginalFilename();
-                return ResponseEntity.ok(message + " with classification: " + detectedClassification);
+            ImUploadResult uploadResult = registryService.doUploadIM(im);
+            if (uploadResult.isSuccess()) {
+                String message = "Module file uploaded and registered successfully: " + file.getOriginalFilename()
+                        + " with classification: " + detectedClassification;
+                if (uploadResult.isLocalOnly()) {
+                    message += " (registered locally only — remote IIC registry was unreachable or returned a server error; "
+                            + "module is available in Registry Modules while using this server)";
+                }
+                return ResponseEntity.ok(message);
             } else {
-                return ResponseEntity.internalServerError().body("Failed to add module");
+                String reason = uploadResult.getFailureReason() != null ? uploadResult.getFailureReason()
+                        : "Failed to add module";
+                if (uploadResult.isClientError()) {
+                    return ResponseEntity.badRequest().body(reason);
+                }
+                return ResponseEntity.internalServerError().body(reason);
             }
         } catch (Exception e) {
             e.printStackTrace();
@@ -442,18 +609,53 @@ public class IMRegistryController {
             String targetId = moduleId;
 
             if (targetId == null && request != null) {
-                // 파일명으로 삭제
                 String filename = request.get("filename");
-                if (filename == null) {
+                if (filename == null || filename.isBlank()) {
                     return ResponseEntity.badRequest()
                             .body("Either moduleId parameter or filename in body is required");
                 }
 
-                // 파일명에서 모듈명 추출 (확장자 제거)
+                // Workspace 메뉴의 Delete는 Registry ID가 아니라 실제 파일 삭제 요청이다.
+                // 파일명만 허용하고 정규화된 경로가 허용 디렉터리 안에 있는지 재확인한다.
+                Path safeFilename = Paths.get(filename).getFileName();
+                if (!safeFilename.toString().equals(filename)) {
+                    return ResponseEntity.badRequest().body("Invalid workspace filename");
+                }
+
+                Path workspaceRoot = Paths.get(".rodos", "WorkSpace").toAbsolutePath().normalize();
+                Path[] allowedDirectories = {
+                        workspaceRoot.resolve("Module Info").normalize(),
+                        workspaceRoot.resolve("Configuration").normalize()
+                };
+
+                Path deletedPath = null;
+                for (Path directory : allowedDirectories) {
+                    Path candidate = directory.resolve(safeFilename).normalize();
+                    if (candidate.startsWith(directory) && Files.isRegularFile(candidate)) {
+                        Files.delete(candidate);
+                        deletedPath = candidate;
+                        break;
+                    }
+                }
+
+                if (deletedPath == null) {
+                    return ResponseEntity.notFound().build();
+                }
+
                 targetId = filename;
                 if (targetId.contains(".")) {
                     targetId = targetId.substring(0, targetId.lastIndexOf("."));
                 }
+
+                // 로컬/원격 Registry에 동일 ID가 있으면 함께 정리하되,
+                // Registry에 없다는 이유로 이미 성공한 파일 삭제를 실패 처리하지 않는다.
+                try {
+                    registryService.deleteIM(targetId);
+                } catch (Exception registryError) {
+                    System.out.println("Workspace file deleted; registry cleanup skipped: "
+                            + registryError.getMessage());
+                }
+                return ResponseEntity.ok("Workspace file deleted successfully: " + filename);
             } else if (targetId == null) {
                 return ResponseEntity.badRequest().body("Either moduleId parameter or filename in body is required");
             }

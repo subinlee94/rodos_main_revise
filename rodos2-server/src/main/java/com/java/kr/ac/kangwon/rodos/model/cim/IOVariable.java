@@ -42,6 +42,10 @@ public abstract class IOVariable {
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private String inDataType;
 
+	@JacksonXmlProperty(localName = xmlTagNames.MODULE_ID)
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private ModuleID moduleID;
+
 	@JacksonXmlProperty(localName = xmlTagNames.ADDITIONAL_INFO)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private List<NameValue> additionalInfo;
@@ -103,6 +107,14 @@ public abstract class IOVariable {
 
 	public void setInDataType(String inDataType) {
 		this.inDataType = inDataType;
+	}
+
+	public ModuleID getModuleID() {
+		return moduleID;
+	}
+
+	public void setModuleID(ModuleID moduleID) {
+		this.moduleID = moduleID;
 	}
 
 	public void setComplexType(String complexType) {

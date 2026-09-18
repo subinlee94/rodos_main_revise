@@ -31,6 +31,10 @@ public abstract class HWInfo extends ModuleInfo {
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private String target;
 
+    @JacksonXmlProperty(localName = "parentRobotRef", isAttribute = true)
+    @JsonInclude(JsonInclude.Include.NON_NULL)
+    private String parentRobotRef;
+
     @JacksonXmlProperty(localName = "simulation")
     @JsonInclude(JsonInclude.Include.NON_NULL)
     private Simulation simulation;
@@ -61,6 +65,14 @@ public abstract class HWInfo extends ModuleInfo {
 
     public void setTarget(String target) {
         this.target = target;
+    }
+
+    public String getParentRobotRef() {
+        return parentRobotRef;
+    }
+
+    public void setParentRobotRef(String parentRobotRef) {
+        this.parentRobotRef = parentRobotRef;
     }
 
     public Simulation getSimulation() {

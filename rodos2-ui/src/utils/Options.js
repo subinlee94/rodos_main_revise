@@ -224,10 +224,9 @@ export const MEM_TYPE_OPTIONS = [
 
 export const NO_BIT_OPTIONS = [
     { value: '', label: 'Select Bit' },
-    { value: '_16', label: '16' },
-    { value: '_32', label: '32' },
-    { value: '_64', label: '64' },
-    { value: '_null', label: 'null' },
+    { value: 'BIT16', label: '16' },
+    { value: 'BIT32', label: '32' },
+    { value: 'BIT64', label: '64' },
 ];
 
 export const ORIGIN_TYPE_OPTIONS = [
@@ -623,10 +622,9 @@ export const CPU_ARCH_OPTIONS = [
 // 비트 옵션 (더 상세)
 export const BIT_OPTIONS = [
     { value: '', label: 'Select Bit' },
-    { value: '_16', label: '16-bit' },
-    { value: '_32', label: '32-bit' },
-    { value: '_64', label: '64-bit' },
-    { value: '_null', label: 'null' },
+    { value: 'BIT16', label: '16-bit' },
+    { value: 'BIT32', label: '32-bit' },
+    { value: 'BIT64', label: '64-bit' },
     { value: 'custom', label: '직접입력' },
 ];
 

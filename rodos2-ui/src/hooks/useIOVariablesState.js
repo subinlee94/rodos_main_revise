@@ -22,6 +22,7 @@ function ioVariablesToTree(ioVariables) {
             complexType: ioVar.complexType || 'NONE',
             complexName: ioVar.complexName || '',
             inDataType: ioVar.inDataType || '',
+            moduleID: ioVar.moduleID || null,
             direction: ioVar.direction || ''
         };
 
@@ -63,6 +64,7 @@ function treeToIoVariables(tree) {
             complexType: nodeData.complexType || 'NONE',
             complexName: nodeData.complexName || '',
             inDataType: nodeData.inDataType || '',
+            moduleID: nodeData.moduleID || null,
             direction: nodeData.direction || ''
         };
 
@@ -255,6 +257,11 @@ export function useIOVariablesState(ioVariables = {}, setIoVariables) {
         return expandedNodes.has(pathKey);
     }, [expandedNodes]);
 
+    const replaceIoVariables = useCallback((nextIoVariables) => {
+        setTree(ioVariablesToTree(nextIoVariables));
+        if (setIoVariables) setIoVariables(nextIoVariables);
+    }, [setIoVariables]);
+
     return {
         // 상태
         tree,
@@ -275,6 +282,7 @@ export function useIOVariablesState(ioVariables = {}, setIoVariables) {
         toggleNodeExpansion,
         isNodeExpanded,
         handleAdd,
-        handleRemove
+        handleRemove,
+        replaceIoVariables
     };
 }

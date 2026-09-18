@@ -280,6 +280,14 @@ export const canvasAPI = {
         return result;
     },
 
+    async validateExecute() {
+        const response = await fetch(API_ENDPOINTS.VALIDATE_EXECUTE);
+        if (!response.ok) {
+            throw new Error(`Execute validation failed: ${response.status}`);
+        }
+        return response.json();
+    },
+
     // 편의 메서드들
     async executeModules() {
         return this.operations('execute');

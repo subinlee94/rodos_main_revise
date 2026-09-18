@@ -126,8 +126,30 @@ export function useWizardDialogState(open, type, wizardData, onClose, onComplete
         const existingControllerInfo = wizardData?.hwModule?.controllerInfoModel || {};
         if (!state) return existingControllerInfo;
 
-        return mergePreservingExisting(existingControllerInfo, state);
-    }, [mergePreservingExisting, wizardData]);
+        const merged = mergePreservingExisting(existingControllerInfo, state);
+        if (type !== 'robot') return merged;
+
+        const ownerModuleID = merged?.idnType?.moduleID || {};
+        const members = (merged?.idnType?.hwAspects || []).map(moduleID => ({
+            moduleID: {
+                mID: `${moduleID?.mID || ''}`,
+                iID: `${moduleID?.iID || '00'}`
+            },
+            dependency: 'OWNED'
+        })).filter(member => member.moduleID.mID);
+
+        return {
+            ...merged,
+            properties: {
+                ...(merged.properties || {}),
+                organization: members.length > 0 ? {
+                    owner: { moduleID: ownerModuleID },
+                    dependency: 'OWNER',
+                    members
+                } : (merged?.properties?.organization || {})
+            }
+        };
+    }, [mergePreservingExisting, type, wizardData]);
 
     const [moduleState, setModuleState] = useState(null);
 
@@ -172,6 +194,26 @@ export function useWizardDialogState(open, type, wizardData, onClose, onComplete
             const selectedHwModule = wizardData?.hwModule;
             const selectedHwRef = selectedHwModule?.ref;
             const existingControllerInfo = selectedHwModule?.controllerInfoModel || {};
+            const selectedModuleType = `${selectedHwModule?.moduleType || selectedHwModule?.type || ''}`.toLowerCase();
+            const canvasSwAspects = (wizardData?.connectedSWModules || [])
+                .map(sw => toModuleIDPair(sw?.moduleID || sw?.ref || ''))
+                .filter(Boolean);
+            const linkedControllerAspects = selectedModuleType === 'robot'
+                ? (selectedHwModule?.linkedControllers || [])
+                    .map(controller => toModuleIDPair(controller?.moduleID || controller?.ref || ''))
+                    .filter(Boolean)
+                : [];
+            const selectedModuleID = toModuleIDPair(selectedHwModule?.moduleID || selectedHwModule?.ref || '');
+            const robotOrganization = selectedModuleType === 'robot' && linkedControllerAspects.length > 0
+                ? {
+                    owner: { moduleID: selectedModuleID },
+                    dependency: 'OWNER',
+                    members: linkedControllerAspects.map(moduleID => ({
+                        moduleID,
+                        dependency: 'OWNED'
+                    }))
+                }
+                : null;
 
             console.log('Selected HW Module:', selectedHwModule);
             console.log('Selected HW Ref:', selectedHwRef);
@@ -243,7 +285,12 @@ export function useWizardDialogState(open, type, wizardData, onClose, onComplete
                 // SharedUserState에서 추출한 정보를 설정
                 swAspects: existingControllerInfo?.swAspects || swAspects,
                 hwAspects: existingControllerInfo?.hwAspects || hwAspects,
-                properties: existingControllerInfo?.properties || {},
+                properties: robotOrganization
+                    ? {
+                        ...(existingControllerInfo?.properties || {}),
+                        organization: robotOrganization
+                    }
+                    : (existingControllerInfo?.properties || {}),
                 ioVariables: existingControllerInfo?.ioVariables || {},
                 services: existingControllerInfo?.services || {},
                 infrastructure: existingControllerInfo?.infrastructure || {},
@@ -253,9 +300,12 @@ export function useWizardDialogState(open, type, wizardData, onClose, onComplete
                 idnType: {
                     ...DEFAULT_SOFTWARE_MODULE_STATE.idnType,
                     idtype: 'Comp',
-                    moduleID: existingControllerInfo?.idnType?.moduleID || DEFAULT_SOFTWARE_MODULE_STATE.idnType?.moduleID || { mID: '', iID: '' },
-                    swAspects: existingControllerInfo?.idnType?.swAspects || [],
-                    hwAspects: existingControllerInfo?.idnType?.hwAspects || []
+                    moduleID: existingControllerInfo?.idnType?.moduleID
+                        || toModuleIDPair(selectedHwModule?.moduleID || selectedHwModule?.ref || '')
+                        || DEFAULT_SOFTWARE_MODULE_STATE.idnType?.moduleID
+                        || { mID: '', iID: '' },
+                    swAspects: mergeUniqueSwAspects(existingControllerInfo?.idnType?.swAspects || [], canvasSwAspects),
+                    hwAspects: mergeUniqueSwAspects(existingControllerInfo?.idnType?.hwAspects || [], linkedControllerAspects)
                 },
                 // 연결된 SW Module들도 추가 (Canvas에서 드래그된 것들)
                 connectedSWModules: wizardData?.connectedSWModules || []
@@ -405,6 +455,19 @@ export function useWizardDialogState(open, type, wizardData, onClose, onComplete
                         swAspects: newData.swAspects || [],
                         hwAspects: newData.hwAspects || []
                     };
+                    if (type === 'robot' && (newData.hwAspects || []).length > 0) {
+                        next.properties = {
+                            ...(next.properties || {}),
+                            organization: {
+                                owner: { moduleID: newData.moduleID || { mID: '', iID: '' } },
+                                dependency: 'OWNER',
+                                members: (newData.hwAspects || []).map(memberID => ({
+                                    moduleID: memberID,
+                                    dependency: 'OWNED'
+                                }))
+                            }
+                        };
+                    }
                     break;
 
                 case 'properties':
@@ -471,7 +534,7 @@ export function useWizardDialogState(open, type, wizardData, onClose, onComplete
             console.log('handleStepChange - specific step data:', next[stepKey]);
             return next;
         });
-    }, []);
+    }, [type]);
 
     // 다음 단계로 이동
     const handleNext = useCallback(() => {

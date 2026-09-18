@@ -18,8 +18,10 @@ import {
 } from '../../utils/Options';
 import { getNodeLabel, getNodeTooltip } from '../../utils/tree/TreeNodeLabelUtils';
 import { TreeNode } from '../../utils/tree/TreeNode';
+import { mergePropertyLists, normalizeLinkedPropertiesBlock } from '../../utils/wizard/linkedPropertiesMerge';
+import { formatModuleID, getLinkedSourceLabel } from '../../utils/wizard/linkedModuleSource';
 
-function PropertiesPage({ properties = {}, onChange, wizardType = 'software', linkedModules = [] }) {
+function PropertiesPage({ properties = {}, onChange, wizardType = 'software', linkedModules = [], linkedHwModules = [] }) {
     const {
         activeTab,
         propertyNodes,
@@ -61,11 +63,12 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
         setTypeInput,
         setUnitInput,
         setCompilerType,
+        importPropertiesBundle,
         debugTreeStructure
     } = usePropertiesState(properties, onChange);
 
     const isControllerWizard = wizardType === 'controller' || wizardType === 'robot';
-    const [showSoftwareProperties, setShowSoftwareProperties] = useState(false);
+    const [showSoftwareProperties, setShowSoftwareProperties] = useState(wizardType === 'robot');
     const [linkedModuleData, setLinkedModuleData] = useState([]);
     const [loadingModules, setLoadingModules] = useState(false);
     const [loadingError, setLoadingError] = useState('');
@@ -73,7 +76,9 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
 
     useEffect(() => {
         if (!isControllerWizard) return;
-        if (!Array.isArray(linkedModules) || linkedModules.length === 0) {
+        const hasSw = Array.isArray(linkedModules) && linkedModules.length > 0;
+        const hasHw = Array.isArray(linkedHwModules) && linkedHwModules.length > 0;
+        if (!hasSw && !hasHw) {
             setLinkedModuleData([]);
             setLoadingError('');
             return;
@@ -84,7 +89,7 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
             setLoadingModules(true);
             setLoadingError('');
             try {
-                const response = await registryService.getLinkedModuleData(linkedModules);
+                const response = await registryService.getLinkedModuleData(linkedModules, linkedHwModules);
                 if (isMounted) setLinkedModuleData(Array.isArray(response?.modules) ? response.modules : []);
             } catch (error) {
                 if (isMounted) {
@@ -100,22 +105,29 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
         return () => {
             isMounted = false;
         };
-    }, [isControllerWizard, linkedModules]);
+    }, [isControllerWizard, linkedModules, linkedHwModules]);
 
     // 모듈별로 그룹화된 Properties
     const groupedLinkedProperties = useMemo(() => {
         const grouped = {};
         linkedModuleData.forEach(moduleInfo => {
-            const moduleName = moduleInfo?.moduleName || moduleInfo?.moduleID || '';
+            const moduleName = getLinkedSourceLabel(moduleInfo);
             const moduleID = moduleInfo?.moduleID || '';
             const props = moduleInfo?.properties || {};
-            const propertiesList = Array.isArray(props.properties) ? props.properties : [];
+            const normalized = normalizeLinkedPropertiesBlock(props);
+            const propertiesList = normalized.properties;
+            const hasEnvironment = !!(
+                normalized.osType?.type || normalized.osType?.bit || normalized.osType?.version ||
+                normalized.compilerType?.compilerName || normalized.compilerType?.osname ||
+                normalized.executionTypes?.length || normalized.libraries?.length
+            );
 
-            if (!grouped[moduleID] && propertiesList.length > 0) {
+            if (!grouped[moduleID] && (propertiesList.length > 0 || hasEnvironment)) {
                 grouped[moduleID] = {
                     moduleName,
                     moduleID,
-                    properties: propertiesList
+                    properties: propertiesList,
+                    sourceProperties: normalized
                 };
             }
         });
@@ -138,22 +150,99 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
         );
     };
 
-    const handleToggleLinkedProperty = (moduleID, property) => {
-        if (!onChange) return;
-        const currentProperties = [...(properties?.properties || [])];
-        const matchPredicate = existing =>
+    const handleToggleLinkedProperty = (property) => {
+        const matchPredicate = (existing) =>
             (existing?.name || '') === (property?.name || '') &&
             (existing?.type || '') === (property?.type || '') &&
             (existing?.description || '') === (property?.description || '');
 
-        const alreadyAdded = currentProperties.some(matchPredicate);
-        const next = {
+        const currentList = [...(properties?.properties || [])];
+        const alreadyAdded = currentList.some(matchPredicate);
+
+        if (alreadyAdded) {
+            importPropertiesBundle({
+                ...properties,
+                properties: currentList.filter((existing) => !matchPredicate(existing))
+            });
+            return;
+        }
+
+        // Add: Property + OS/Compiler/Libraries/Organization 함께 계승
+        importPropertiesBundle({
             ...properties,
-            properties: alreadyAdded
-                ? currentProperties.filter(existing => !matchPredicate(existing))
-                : [...currentProperties, { ...property }]
-        };
-        onChange(next);
+            properties: mergePropertyLists(currentList, [{ ...property }])
+        });
+    };
+
+    const handleImportAllFromLinkedModule = (moduleID) => {
+        const moduleInfo = linkedModuleData.find((m) => m.moduleID === moduleID);
+        if (!moduleInfo?.properties) return;
+        const source = normalizeLinkedPropertiesBlock(moduleInfo.properties);
+        importPropertiesBundle({
+            ...properties,
+            properties: mergePropertyLists(properties?.properties || [], source.properties)
+        });
+    };
+
+    const handleImportEnvironment = (moduleID, section) => {
+        const source = groupedLinkedProperties[moduleID]?.sourceProperties;
+        if (!source) return;
+
+        if (section === 'os') {
+            importPropertiesBundle({ ...properties, osType: source.osType });
+            return;
+        }
+        if (section === 'compiler') {
+            importPropertiesBundle({
+                ...properties,
+                compilerType: source.compilerType,
+                executionTypes: source.executionTypes
+            });
+            return;
+        }
+        if (section === 'libraries') {
+            const currentLibraries = Array.isArray(properties?.libraries) ? properties.libraries : [];
+            const seen = new Set(currentLibraries.map(lib => `${lib?.name || ''}|${lib?.version || ''}`));
+            const libraries = [...currentLibraries];
+            source.libraries.forEach(lib => {
+                const key = `${lib?.name || ''}|${lib?.version || ''}`;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    libraries.push(lib);
+                }
+            });
+            importPropertiesBundle({ ...properties, libraries });
+        }
+    };
+
+    const isModuleFullyImported = (moduleID) => {
+        const moduleInfo = linkedModuleData.find((m) => m.moduleID === moduleID);
+        if (!moduleInfo?.properties) return false;
+        const source = normalizeLinkedPropertiesBlock(moduleInfo.properties);
+        if (source.properties.length === 0) return false;
+        return source.properties.every((p) => hasPropertyInProperties(p));
+    };
+
+    const isEnvironmentApplied = (moduleID, section) => {
+        const source = groupedLinkedProperties[moduleID]?.sourceProperties;
+        if (!source) return false;
+
+        if (section === 'os') {
+            return ['type', 'bit', 'version'].every(key =>
+                `${properties?.osType?.[key] || ''}` === `${source?.osType?.[key] || ''}`
+            );
+        }
+        if (section === 'compiler') {
+            return JSON.stringify(properties?.compilerType || {}) === JSON.stringify(source.compilerType || {}) &&
+                JSON.stringify(properties?.executionTypes || []) === JSON.stringify(source.executionTypes || []);
+        }
+        if (section === 'libraries') {
+            const selected = new Set((properties?.libraries || []).map(lib => `${lib?.name || ''}|${lib?.version || ''}`));
+            return source.libraries.length > 0 && source.libraries.every(
+                lib => selected.has(`${lib?.name || ''}|${lib?.version || ''}`)
+            );
+        }
+        return false;
     };
 
     // TreeViewer 재귀 렌더링
@@ -266,18 +355,28 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
                                         fontSize: '14px'
                                     }}
                                 >
-                                    {showSoftwareProperties ? 'Hide Software Properties' : 'Add Software Property'}
+                                    {showSoftwareProperties ? 'Hide Controller Properties' : 'Select Controller Properties'}
                                 </button>
                             </div>
                         )}
                         {isControllerWizard && showSoftwareProperties && (
                             <div style={{ marginBottom: 16, padding: '16px', background: '#f8f9fa', borderRadius: '8px', border: '1px solid #e1e5e9' }}>
                                 <div className="property-group">
-                                    <label>Linked Properties (from IDnType Add)</label>
+                                    <label>Selectable Properties by Controller / Module</label>
+                                    <p style={{ fontSize: 12, color: '#666', margin: '4px 0 8px' }}>
+                                        Property와 실행 환경(OS, Compiler/Execution, Libraries)을 각각 선택할 수 있습니다.
+                                        Organization은 IDnType에서 선택한 Controller를 기준으로 자동 생성됩니다.
+                                    </p>
                                     {loadingModules && <div style={{ padding: '12px', color: '#666' }}>Loading Properties...</div>}
                                     {!loadingModules && loadingError && <div style={{ padding: '12px', color: '#dc3545' }}>{loadingError}</div>}
                                     {!loadingModules && !loadingError && Object.keys(groupedLinkedProperties).length === 0 && (
-                                        <div style={{ padding: '12px', color: '#666' }}>표시할 Properties가 없습니다. IDnType에서 모듈을 Add 해주세요.</div>
+                                        <div style={{ padding: '12px', color: '#666' }}>
+                                            표시할 Properties가 없습니다.
+                                            <br />
+                                            IDnType의 <strong>Software Modules</strong>에서 SW를 Add 하거나,
+                                            Controller를 HW에 연결했다면 해당 Controller의 <strong>swAspects</strong>에 SW가 있어야 합니다.
+                                            WorkSpace(Module Info)에 저장된 XML도 목록에 포함됩니다.
+                                        </div>
                                     )}
                                 </div>
 
@@ -313,9 +412,64 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
                                                             fontSize: '14px'
                                                         }}
                                                     >
-                                                        <span>{moduleGroup.moduleName} ({moduleGroup.properties.length})</span>
+                                                        <span>{moduleGroup.moduleName} ({moduleGroup.properties.length} properties)</span>
                                                         <span>{isExpanded ? '▼' : '▶'}</span>
                                                     </button>
+                                                    {isExpanded && (
+                                                        <div style={{ padding: '8px 12px', borderTop: '1px solid #e1e5e9', background: '#fff' }}>
+                                                            {moduleGroup.properties.length > 0 && <button
+                                                                type="button"
+                                                                onClick={() => handleImportAllFromLinkedModule(moduleGroup.moduleID)}
+                                                                style={{
+                                                                    padding: '8px 14px',
+                                                                    background: isModuleFullyImported(moduleGroup.moduleID) ? '#198754' : '#007bff',
+                                                                    color: 'white',
+                                                                    border: 'none',
+                                                                    borderRadius: '4px',
+                                                                    cursor: 'pointer',
+                                                                    fontSize: '13px',
+                                                                    fontWeight: 600,
+                                                                    marginBottom: '10px'
+                                                                }}
+                                                            >
+                                                                {isModuleFullyImported(moduleGroup.moduleID)
+                                                                    ? '✓ All Properties Added'
+                                                                    : 'Add All Properties'}
+                                                            </button>}
+                                                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                                                                {(moduleGroup.sourceProperties?.osType?.type || moduleGroup.sourceProperties?.osType?.version) && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="property-btn"
+                                                                        onClick={() => handleImportEnvironment(moduleGroup.moduleID, 'os')}
+                                                                        style={{ background: isEnvironmentApplied(moduleGroup.moduleID, 'os') ? '#198754' : '#2455c3' }}
+                                                                    >
+                                                                        {isEnvironmentApplied(moduleGroup.moduleID, 'os') ? '✓ OS Applied' : `Apply OS (${moduleGroup.sourceProperties.osType.type || '-'} ${moduleGroup.sourceProperties.osType.version || ''})`}
+                                                                    </button>
+                                                                )}
+                                                                {(moduleGroup.sourceProperties?.compilerType?.compilerName || moduleGroup.sourceProperties?.executionTypes?.length > 0) && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="property-btn"
+                                                                        onClick={() => handleImportEnvironment(moduleGroup.moduleID, 'compiler')}
+                                                                        style={{ background: isEnvironmentApplied(moduleGroup.moduleID, 'compiler') ? '#198754' : '#2455c3' }}
+                                                                    >
+                                                                        {isEnvironmentApplied(moduleGroup.moduleID, 'compiler') ? '✓ Compiler / Execution Applied' : 'Apply Compiler / Execution'}
+                                                                    </button>
+                                                                )}
+                                                                {moduleGroup.sourceProperties?.libraries?.length > 0 && (
+                                                                    <button
+                                                                        type="button"
+                                                                        className="property-btn"
+                                                                        onClick={() => handleImportEnvironment(moduleGroup.moduleID, 'libraries')}
+                                                                        style={{ background: isEnvironmentApplied(moduleGroup.moduleID, 'libraries') ? '#198754' : '#2455c3' }}
+                                                                    >
+                                                                        {isEnvironmentApplied(moduleGroup.moduleID, 'libraries') ? `✓ Libraries Added (${moduleGroup.sourceProperties.libraries.length})` : `Add Libraries (${moduleGroup.sourceProperties.libraries.length})`}
+                                                                    </button>
+                                                                )}
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                     
                                                     {/* 드롭다운 내용 */}
                                                     {isExpanded && (
@@ -328,9 +482,9 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
                                                                         style={{
                                                                             padding: '10px',
                                                                             marginBottom: '8px',
-                                                                            background: '#f8f9fa',
+                                                                            background: added ? '#e9f7ef' : '#f8f9fa',
                                                                             borderRadius: '6px',
-                                                                            border: '1px solid #e1e5e9'
+                                                                            border: added ? '2px solid #198754' : '1px solid #e1e5e9'
                                                                         }}
                                                                     >
                                                                         <div style={{ fontWeight: 500, marginBottom: '4px' }}>
@@ -344,7 +498,7 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
                                                                         </div>
                                                                         <button
                                                                             type="button"
-                                                                            onClick={() => handleToggleLinkedProperty(moduleGroup.moduleID, property)}
+                                                                            onClick={() => handleToggleLinkedProperty(property)}
                                                                             style={{
                                                                                 padding: '6px 12px',
                                                                                 background: added ? '#dc3545' : '#28a745',
@@ -355,7 +509,7 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
                                                                                 fontSize: '12px'
                                                                             }}
                                                                         >
-                                                                            {added ? 'Remove' : 'Add'}
+                                                                            {added ? '✓ Selected · Remove' : 'Add'}
                                                                         </button>
                                                                     </div>
                                                                 );
@@ -555,6 +709,23 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
             {activeTab === 'organization' && (
                 <div className="properties-page-flex">
                     <div className="property-input-area property-input-area--fullwidth">
+                        {wizardType === 'robot' ? (
+                            <div className="property-group">
+                                <label>Composite Organization (ISO 22166-202)</label>
+                                <p className="section-hint">
+                                    The Robot is the OWNER. Controllers selected in IDnType are generated as OWNED members.
+                                </p>
+                                <div style={{ padding: 12, border: '1px solid #e1e5e9', borderRadius: 6 }}>
+                                    <div><strong>Owner:</strong> {formatModuleID(organization?.owner) || '-'}</div>
+                                    {(organization?.members || []).map((member, index) => (
+                                        <div key={`${formatModuleID(member?.moduleID)}-${index}`} style={{ marginTop: 8 }}>
+                                            <strong>Member {index + 1}:</strong> {formatModuleID(member?.moduleID)} ({member?.dependency || 'OWNED'})
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        ) : (
+                        <>
                         <div className="property-row property-row--twocol">
                             <div className="property-group">
                                 <label>Owner</label>
@@ -605,6 +776,8 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
                                     </div>
                                 ))}
                             </div>
+                        )}
+                        </>
                         )}
                     </div>
                 </div>

@@ -1,21 +1,13 @@
-<Module type="SIM">
+<Module type="Composite">
   <moduleName>turtlebot</moduleName>
-  <manufacturer>iic</manufacturer>
-  <description>00</description>
-  <examples>00</examples>
+  <manufactures></manufactures>
+  <description></description>
+  <examples></examples>
   <idnType>
-    <moduleID>
-      <mID>e4f9970fef8f56d397451d3891318b49070032014010000000000000000000</mID>
-      <iID>00</iID>
-    </moduleID>
+    <moduleID/>
     <swAspects/>
-    <hwAspects>
-      <moduleID>
-        <mID>e4f9970fef8f56d397451d3891318b49061F32014010001000000000000000</mID>
-        <iID>00</iID>
-      </moduleID>
-    </hwAspects>
-    <informationModelVersion>1.0</informationModelVersion>
+    <hwAspects/>
+    <informationModelVersion/>
   </idnType>
   <properties>
     <osType/>

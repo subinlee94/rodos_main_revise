@@ -34,6 +34,7 @@ export const API_ENDPOINTS = {
     CANVAS_HW_MAPPING: '/api/save-hw-mapping',
     CANVAS_SIMULATION: '/api/simulation',
     CANVAS_OPERATIONS: '/api/operations',
+    VALIDATE_EXECUTE: '/api/validate-execute',
     AGENT_DOCKER_AGENTS: '/api/agent/docker-agents',
     SHARED_USER_STATE: '/api/shared-user-state'
 };

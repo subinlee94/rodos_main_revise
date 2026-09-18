@@ -25,6 +25,11 @@ public class Properties {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public CompilerType compilerType;
 
+	/** 일부 IM XML은 {@code compilerType} 태그를 사용한다 (legacy는 {@code compiler}). */
+	@JacksonXmlProperty(localName = "compilerType")
+	@JsonInclude(JsonInclude.Include.NON_NULL)
+	private CompilerType compilerTypeAlt;
+
 	@JacksonXmlElementWrapper(localName = xmlTagNames.EXECUTION_TYPES)
 	@JacksonXmlProperty(localName = xmlTagNames.ITEM_UPPER)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
@@ -34,6 +39,12 @@ public class Properties {
 	@JacksonXmlProperty(localName = xmlTagNames.LIBRARY)
 	@JsonInclude(JsonInclude.Include.NON_EMPTY)
 	private List<Library> libraries;
+
+	/** WorkSpace IM XML은 {@code Libraries/Item} 형식을 사용한다. */
+	@JacksonXmlElementWrapper(localName = xmlTagNames.LIBRARIES)
+	@JacksonXmlProperty(localName = xmlTagNames.ITEM_UPPER)
+	@JsonInclude(JsonInclude.Include.NON_EMPTY)
+	private List<Library> libraryItems;
 
 	@JacksonXmlProperty(localName = xmlTagNames.ORGANIZATION)
 	@JsonInclude(JsonInclude.Include.NON_NULL)
@@ -72,7 +83,29 @@ public class Properties {
 	}
 
 	public List<Library> getLibraries() {
-		return this.libraries;
+		List<Library> merged = new ArrayList<>();
+		if (libraries != null) {
+			merged.addAll(libraries);
+		}
+		if (libraryItems != null) {
+			for (Library library : libraryItems) {
+				if (library != null && library.getName() != null && !library.getName().isBlank()) {
+					merged.add(library);
+				}
+			}
+		}
+		if (merged.isEmpty() && libraries != null) {
+			return libraries;
+		}
+		return merged;
+	}
+
+	public Organization getOrganization() {
+		return organization;
+	}
+
+	public void setOrganization(Organization organization) {
+		this.organization = organization;
 	}
 
 	public void addLibrary(Library library) {
@@ -102,7 +135,32 @@ public class Properties {
 	}
 
 	public CompilerType getCompilerType() {
+		if (compilerTypeAlt != null && hasCompilerValues(compilerTypeAlt)) {
+			return compilerTypeAlt;
+		}
 		return compilerType;
+	}
+
+	private static boolean hasCompilerValues(CompilerType compiler) {
+		if (compiler == null) {
+			return false;
+		}
+		if (compiler.osName != null && !compiler.osName.isBlank()) {
+			return true;
+		}
+		if (compiler.getCompilerName() != null && !compiler.getCompilerName().isBlank()) {
+			return true;
+		}
+		if (compiler.getVerRangeOS() != null
+				&& (compiler.getVerRangeOS().getMin() != null || compiler.getVerRangeOS().getMax() != null)) {
+			return true;
+		}
+		if (compiler.getVerRangeCompiler() != null
+				&& (compiler.getVerRangeCompiler().getMin() != null
+						|| compiler.getVerRangeCompiler().getMax() != null)) {
+			return true;
+		}
+		return compiler.getBitsnCPUarch() != null && !compiler.getBitsnCPUarch().isBlank();
 	}
 
 	public void setCompilerType(CompilerType compilerType) {

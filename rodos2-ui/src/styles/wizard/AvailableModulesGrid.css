@@ -1,0 +1,80 @@
+/* AvailableModulesGrid — 시각 스타일만 (열 순서는 컴포넌트 인라인 grid로 고정) */
+.rodos2-am-wrap {
+    margin-bottom: 24px;
+    overflow-x: auto;
+    max-width: 100%;
+}
+
+.rodos2-am-inner {
+    width: 100%;
+    min-width: 400px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.rodos2-am-header {
+    background: #e8f2ff;
+    color: #2c3e50;
+    font-weight: 600;
+    font-size: 12px;
+    border-bottom: 1px solid #d1e7ff;
+}
+
+.rodos2-am-row {
+    border-bottom: 1px solid #e9ecef;
+    font-size: 12px;
+}
+
+.rodos2-am-row:last-child {
+    border-bottom: none;
+}
+
+.rodos2-am-row:hover {
+    background: #f8f9fa;
+}
+
+.rodos2-am-row--selected {
+    background: #f0f8ff;
+    opacity: 0.6;
+}
+
+.rodos2-am-cell--action {
+    min-width: 0;
+}
+
+.rodos2-am-cell--id {
+    max-width: 100%;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    font-family: monospace;
+    font-size: 11px;
+}
+
+/* + Add 버튼 (IDnTypePage.css 없이 단독 사용 시에도 동일하게 보이도록) */
+.rodos2-am-wrap .add-btn {
+    background: #e8f5e8;
+    border: 1px solid #b3d9b3;
+    color: #198754;
+    border-radius: 4px;
+    padding: 4px 8px;
+    font-size: 11px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+}
+
+.rodos2-am-wrap .add-btn:hover:not(.disabled) {
+    background: #d4edda;
+    border-color: #9fc89f;
+}
+
+.rodos2-am-wrap .add-btn.disabled {
+    background: #f8f9fa;
+    border-color: #dee2e6;
+    color: #6c757d;
+    cursor: not-allowed;
+    opacity: 0.6;
+}

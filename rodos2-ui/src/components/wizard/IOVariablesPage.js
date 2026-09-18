@@ -5,8 +5,9 @@ import { TreeNode } from '../../utils/tree/TreeNode';
 import { getNodeLabel, getNodeTooltip } from '../../utils/tree/TreeNodeLabelUtils';
 import { useIOVariablesState } from '../../hooks/useIOVariablesState';
 import { registryService } from '../../services/registryService';
+import { getLinkedSourceLabel, moduleIDKey, toModuleIDPair } from '../../utils/wizard/linkedModuleSource';
 
-function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'software', linkedModules = [] }) {
+function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'software', linkedModules = [], linkedHwModules = [] }) {
     const {
         tree,
         selectedNodePath,
@@ -22,7 +23,8 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
         toggleNodeExpansion,
         isNodeExpanded,
         handleAdd,
-        handleRemove
+        handleRemove,
+        replaceIoVariables
     } = useIOVariablesState(ioVariables, setIoVariables);
     const isControllerWizard = wizardType === 'controller' || wizardType === 'robot';
     const [linkedModuleData, setLinkedModuleData] = useState([]);
@@ -32,7 +34,9 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
 
     useEffect(() => {
         if (!isControllerWizard) return;
-        if (!Array.isArray(linkedModules) || linkedModules.length === 0) {
+        const hasSw = Array.isArray(linkedModules) && linkedModules.length > 0;
+        const hasHw = Array.isArray(linkedHwModules) && linkedHwModules.length > 0;
+        if (!hasSw && !hasHw) {
             setLinkedModuleData([]);
             setLoadingError('');
             return;
@@ -43,7 +47,7 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
             setLoadingModules(true);
             setLoadingError('');
             try {
-                const response = await registryService.getLinkedModuleData(linkedModules);
+                const response = await registryService.getLinkedModuleData(linkedModules, linkedHwModules);
                 if (isMounted) setLinkedModuleData(Array.isArray(response?.modules) ? response.modules : []);
             } catch (error) {
                 if (isMounted) {
@@ -59,14 +63,14 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
         return () => {
             isMounted = false;
         };
-    }, [isControllerWizard, linkedModules]);
+    }, [isControllerWizard, linkedModules, linkedHwModules]);
 
     // 모듈별로 그룹화된 IOVariables
     const groupedLinkedIOVariables = useMemo(() => {
         const grouped = {};
         linkedModuleData.forEach(moduleInfo => {
             const io = moduleInfo?.ioVariables || {};
-            const moduleName = moduleInfo?.moduleName || moduleInfo?.moduleID || '';
+            const moduleName = getLinkedSourceLabel(moduleInfo);
             const moduleID = moduleInfo?.moduleID || '';
             const inputs = Array.isArray(io?.inputs) ? io.inputs : [];
             const outputs = Array.isArray(io?.outputs) ? io.outputs : [];
@@ -107,7 +111,7 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
         }));
     };
 
-    const normalizeLinkedVariable = (variable, direction) => {
+    const normalizeLinkedVariable = (variable, direction, sourceModuleID) => {
         const cloned = JSON.parse(JSON.stringify(variable || {}));
         return {
             ...cloned,
@@ -119,30 +123,34 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
             complexType: cloned?.complexType || 'NONE',
             complexName: cloned?.complexName || '',
             inDataType: cloned?.inDataType || '',
+            moduleID: cloned?.moduleID || toModuleIDPair(sourceModuleID),
             direction
         };
     };
 
-    const hasVariableInSection = (direction, variable) => {
+    const hasVariableInSection = (direction, variable, sourceModuleID) => {
         const section = direction === 'input' ? (ioVariables?.inputs || []) : (ioVariables?.outputs || []);
+        const expectedModuleID = variable?.moduleID || toModuleIDPair(sourceModuleID);
         return section.some(existing =>
             (existing?.name || '') === (variable?.name || '') &&
             (existing?.type || '') === (variable?.type || '') &&
             (existing?.description || '') === (variable?.description || '') &&
-            (existing?.direction || direction) === direction
+            (existing?.direction || direction) === direction &&
+            moduleIDKey(existing?.moduleID) === moduleIDKey(expectedModuleID)
         );
     };
 
     const handleToggleLinkedVariable = (item) => {
         if (!setIoVariables) return;
-        const normalized = normalizeLinkedVariable(item.variable, item.direction);
+        const normalized = normalizeLinkedVariable(item.variable, item.direction, item.moduleID);
         const sectionKey = item.direction === 'input' ? 'inputs' : 'outputs';
         const currentSection = [...(ioVariables?.[sectionKey] || [])];
         const matchPredicate = existing =>
             (existing?.name || '') === (normalized?.name || '') &&
             (existing?.type || '') === (normalized?.type || '') &&
             (existing?.description || '') === (normalized?.description || '') &&
-            (existing?.direction || item.direction) === item.direction;
+            (existing?.direction || item.direction) === item.direction &&
+            moduleIDKey(existing?.moduleID) === moduleIDKey(normalized?.moduleID);
 
         const alreadyAdded = currentSection.some(matchPredicate);
         const next = {
@@ -156,19 +164,20 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
         } else {
             next[sectionKey] = [...currentSection, normalized];
         }
-        setIoVariables(next);
+        replaceIoVariables(next);
     };
 
-    if (isControllerWizard) {
-        return (
-            <div className="io-page">
-                <div className="io-input-area" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+    const renderLinkedVariables = () => (
+            <div style={{ border: '1px solid #e1e5e9', borderRadius: 8, background: '#f8f9fa' }}>
+                <div style={{ maxHeight: 280, overflowY: 'auto', padding: '14px 16px' }}>
                     <div className="io-group">
-                        <label>Linked IOVariables (from IDnType Add)</label>
+                        <label>Selectable I/O Variables by Controller / Module</label>
                         {loadingModules && <div>Loading IO variables...</div>}
                         {!loadingModules && loadingError && <div>{loadingError}</div>}
                         {!loadingModules && !loadingError && Object.keys(groupedLinkedIOVariables).length === 0 && (
-                            <div>표시할 IOVariables가 없습니다. IDnType에서 모듈을 Add 해주세요.</div>
+                            <div style={{ color: '#666', fontSize: 13 }}>
+                                연결된 모듈의 I/O가 없습니다. 가져오기는 선택 사항이며 아래에서 직접 입력할 수 있습니다.
+                            </div>
                         )}
                     </div>
 
@@ -212,7 +221,7 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
                                         {isExpanded && (
                                             <div style={{ padding: '12px', borderTop: '1px solid #e1e5e9' }}>
                                                 {moduleGroup.variables.map((item, idx) => {
-                                                    const added = hasVariableInSection(item.direction, item.variable);
+                                                    const added = hasVariableInSection(item.direction, item.variable, item.moduleID);
                                                     return (
                                                         <div
                                                             key={`${item.moduleID}-${item.direction}-${item.variable?.name || idx}-${idx}`}
@@ -224,30 +233,55 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
                                                                 border: '1px solid #e1e5e9'
                                                             }}
                                                         >
-                                                            <div style={{ fontWeight: 500, marginBottom: '4px' }}>
-                                                                [{item.direction.toUpperCase()}] {item.variable?.name || '(unnamed)'}
+                                                            <div
+                                                                style={{
+                                                                    display: 'flex',
+                                                                    alignItems: 'center',
+                                                                    gap: '12px',
+                                                                    flexWrap: 'wrap',
+                                                                    marginBottom: '8px'
+                                                                }}
+                                                            >
+                                                                <button
+                                                                    type="button"
+                                                                    className="io-btn"
+                                                                    onClick={() => handleToggleLinkedVariable(item)}
+                                                                    style={{
+                                                                        padding: '6px 12px',
+                                                                        background: added ? '#dc3545' : '#28a745',
+                                                                        color: 'white',
+                                                                        border: 'none',
+                                                                        borderRadius: '4px',
+                                                                        cursor: 'pointer',
+                                                                        fontSize: '12px',
+                                                                        flexShrink: 0
+                                                                    }}
+                                                                >
+                                                                    {added ? 'Remove' : 'Add'}
+                                                                </button>
+                                                                <span style={{ fontWeight: 500, minWidth: 0 }}>
+                                                                    [{item.direction.toUpperCase()}] {item.variable?.name || '(unnamed)'}
+                                                                </span>
+                                                                <span
+                                                                    style={{
+                                                                        fontSize: '11px',
+                                                                        color: '#555',
+                                                                        fontFamily: 'monospace',
+                                                                        overflow: 'hidden',
+                                                                        textOverflow: 'ellipsis',
+                                                                        whiteSpace: 'nowrap',
+                                                                        maxWidth: '240px'
+                                                                    }}
+                                                                    title={item.moduleID}
+                                                                >
+                                                                    {item.moduleID || '-'}
+                                                                </span>
                                                             </div>
-                                                            <div style={{ fontSize: '12px', color: '#555', marginBottom: '8px' }}>
+                                                            <div style={{ fontSize: '12px', color: '#555' }}>
                                                                 Type: {item.variable?.type || '-'}
                                                                 {item.variable?.unit && ` | Unit: ${item.variable.unit}`}
                                                                 {item.variable?.description && ` | ${item.variable.description}`}
                                                             </div>
-                                                            <button
-                                                                type="button"
-                                                                className="io-btn"
-                                                                onClick={() => handleToggleLinkedVariable(item)}
-                                                                style={{
-                                                                    padding: '6px 12px',
-                                                                    background: added ? '#dc3545' : '#28a745',
-                                                                    color: 'white',
-                                                                    border: 'none',
-                                                                    borderRadius: '4px',
-                                                                    cursor: 'pointer',
-                                                                    fontSize: '12px'
-                                                                }}
-                                                            >
-                                                                {added ? 'Remove' : 'Add'}
-                                                            </button>
                                                         </div>
                                                     );
                                                 })}
@@ -261,7 +295,6 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
                 </div>
             </div>
         );
-    }
 
     // ComplexType에 따른 입력 폼 렌더링
     const renderIoVarForm = () => {
@@ -548,6 +581,16 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
 
     return (
         <div className="io-page">
+            {isControllerWizard && (
+                <div style={{ marginBottom: 16 }}>
+                    <h3 style={{ margin: '0 0 8px' }}>Import from linked Controller / Software <span style={{ color: '#777', fontSize: 13, fontWeight: 400 }}>(Optional)</span></h3>
+                    <p style={{ margin: '0 0 10px', color: '#666', fontSize: 13 }}>
+                        Imported variables retain their source moduleID. You can also define this module's I/O manually below.
+                    </p>
+                    {renderLinkedVariables()}
+                </div>
+            )}
+            <h3 style={{ margin: '0 0 8px' }}>{wizardType === 'robot' ? 'Robot I/O Editor (Manual)' : 'Controller I/O Editor (Manual)'}</h3>
             <div className="io-flex">
                 <div className="io-input-area">
                     <div className="io-group">
@@ -563,10 +606,6 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
                         <label>Description</label>
                         <textarea name="description" value={ioVar.description} onChange={handleInputChange} placeholder="Enter description" />
                     </div>
-                    <div style={{ marginTop: 18, display: 'flex', gap: 12 }}>
-                        <button type="button" className="io-btn" onClick={handleAdd} disabled={selectedNodePath.length === 0}>Add</button>
-                        <button type="button" className="io-btn" onClick={handleRemove} disabled={selectedNodePath.length <= 1}>Remove</button>
-                    </div>
                 </div>
                 <div className="io-tree-area" onClick={(e) => {
                     // 트리 노드가 아닌 영역 클릭 시에만 선택 해제
@@ -575,6 +614,13 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
                     }
                 }}>
                     {renderTree(tree)}
+                </div>
+            </div>
+            <div className="io-actions-bar">
+                <span className="io-actions-hint">오른쪽에서 inputs / outputs / inouts 중 추가할 위치를 선택하세요.</span>
+                <div className="io-actions-buttons">
+                    <button type="button" className="io-btn" onClick={handleAdd} disabled={selectedNodePath.length === 0}>Add</button>
+                    <button type="button" className="io-btn" onClick={handleRemove} disabled={selectedNodePath.length <= 1}>Remove</button>
                 </div>
             </div>
         </div>

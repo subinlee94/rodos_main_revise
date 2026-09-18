@@ -94,6 +94,7 @@ function Workspace({ expanded, selectedKey, onToggle, onSelect, onFileSelect, on
                                 await workspaceService.uploadFile(file);
                                 alert('File uploaded successfully: ' + file.name);
                                 loadWorkspaceTree();
+                                window.dispatchEvent(new CustomEvent('registry-refresh'));
                             } catch (error) {
                                 console.error('Upload error:', error);
                                 alert('Upload failed');
@@ -102,7 +103,7 @@ function Workspace({ expanded, selectedKey, onToggle, onSelect, onFileSelect, on
                     };
                     input.click();
                     //수정 upload file 기능 추가
-                }else if (isFile && node.fileType === 'xml') {
+                } else if (isFile && node.fileType === 'xml') {
                     try {
                         // 1. 파일 내용 가져오기 (문자열)
                         const fileContent = await workspaceService.getWorkspaceFileContent(node.label);
@@ -118,10 +119,15 @@ function Workspace({ expanded, selectedKey, onToggle, onSelect, onFileSelect, on
                         await workspaceService.uploadFile(file);
                         alert('File uploaded successfully: ' + node.label);
                         loadWorkspaceTree();
+                        window.dispatchEvent(new CustomEvent('registry-refresh'));
                     } catch (error) {
                         console.error('Upload error:', error);
                         alert('Upload failed: ' + (error.message || 'Unknown error'));
                     }
+                } else if (isDirectory && node.key === 'canvas-configuration') {
+                    alert('Canvas Configuration 폴더에서는 업로드가 지원되지 않습니다. Module Info에서 XML을 업로드하세요.');
+                } else if (isFile) {
+                    alert('레지스트리로 다시 올릴 수 있는 것은 Module Info의 XML 파일뿐입니다. (대소문자 포함 .xml)');
                 }
                 
             } else if (action === 'delete') {
@@ -132,18 +138,7 @@ function Workspace({ expanded, selectedKey, onToggle, onSelect, onFileSelect, on
                         loadWorkspaceTree();
                     } catch (error) {
                         console.error('Delete error:', error);
-                        alert('Delete failed');
-                    }
-                }
-            } else if (action === 'delete') {
-                if (isFile && window.confirm(`Delete "${node.label}"?`)) {
-                    try {
-                        await workspaceService.deleteFile(node.label);
-                        alert('File deleted successfully: ' + node.label);
-                        loadWorkspaceTree();
-                    } catch (error) {
-                        console.error('Delete error:', error);
-                        alert('Delete failed');
+                        alert('Delete failed: ' + (error.message || 'Unknown error'));
                     }
                 }
             }

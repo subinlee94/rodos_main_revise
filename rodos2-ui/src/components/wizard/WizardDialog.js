@@ -123,6 +123,7 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                                 setIoVariables={data => handleStepChange('ioVariables', data)}
                                 wizardType={wizardTypeForPages}
                                 linkedModules={moduleState?.idnType?.swAspects || []}
+                                linkedHwModules={moduleState?.idnType?.hwAspects || []}
                             />
                         );
                     case 1:
@@ -132,6 +133,7 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                                 onChange={data => handleStepChange('services', data)}
                                 wizardType={wizardTypeForPages}
                                 linkedModules={moduleState?.idnType?.swAspects || []}
+                                linkedHwModules={moduleState?.idnType?.hwAspects || []}
                             />
                         );
                         default:
@@ -160,6 +162,8 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                         moduleID={moduleID}
                         moduleIDString={moduleIDString}
                         wizardType={wizardTypeForPages}
+                        swAspects={moduleState.swAspects}
+                        hwAspects={moduleState.hwAspects}
                         onChange={data => handleStepChange('idnType', data)}
                     />;
                 case 2:
@@ -168,6 +172,7 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                         onChange={data => handleStepChange('properties', data)}
                         wizardType={wizardTypeForPages}
                         linkedModules={moduleState?.idnType?.swAspects || []}
+                        linkedHwModules={moduleState?.idnType?.hwAspects || []}
                     />;
                 case 3:
                     return (
@@ -176,6 +181,7 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                             setIoVariables={data => handleStepChange('ioVariables', data)}
                             wizardType={wizardTypeForPages}
                             linkedModules={moduleState?.idnType?.swAspects || []}
+                            linkedHwModules={moduleState?.idnType?.hwAspects || []}
                         />
                     );
                 case 4:
@@ -185,6 +191,7 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                             onChange={data => handleStepChange('services', data)}
                             wizardType={wizardTypeForPages}
                             linkedModules={moduleState?.idnType?.swAspects || []}
+                            linkedHwModules={moduleState?.idnType?.hwAspects || []}
                         />
                     );
                 case 5:
@@ -265,6 +272,7 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                         onChange={data => handleStepChange('properties', data)}
                         wizardType={type}
                         linkedModules={moduleState?.idnType?.swAspects || []}
+                        linkedHwModules={moduleState?.idnType?.hwAspects || []}
                     />;
                 case 3:
                     return <IOVariablesPage ioVariables={moduleState.ioVariables} setIoVariables={data => handleStepChange('ioVariables', data)} />;
@@ -334,6 +342,7 @@ function WizardDialog({ open, type, wizardData, onClose, onComplete, onWorkspace
                     onChange={data => handleStepChange('properties', data)}
                     wizardType={type || 'software'}
                     linkedModules={moduleState?.idnType?.swAspects || []}
+                    linkedHwModules={moduleState?.idnType?.hwAspects || []}
                 />;
             case 3:
                 return <IOVariablesPage ioVariables={moduleState.ioVariables} setIoVariables={data => handleStepChange('ioVariables', data)} />;

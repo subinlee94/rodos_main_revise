@@ -3,8 +3,9 @@ import '../../styles/wizard/ServicesPage.css';
 import { SERVICE_TYPE_OPTIONS, PV_TYPE_OPTIONS, MO_TYPE_OPTIONS, REQ_PROV_TYPE_OPTIONS, IN_OUT_TYPE_OPTIONS } from '../../utils/Options';
 import { useServicesState } from '../../hooks/useServicesState';
 import { registryService } from '../../services/registryService';
+import { getLinkedSourceLabel, moduleIDKey, toModuleIDPair } from '../../utils/wizard/linkedModuleSource';
 
-function ServicesPage({ services = {}, onChange, wizardType = 'software', linkedModules = [] }) {
+function ServicesPage({ services = {}, onChange, wizardType = 'software', linkedModules = [], linkedHwModules = [] }) {
     const normalizeMethodCandidates = (methodListItem) => {
         if (!methodListItem) return [];
         if (Array.isArray(methodListItem?.method)) return methodListItem.method;
@@ -55,8 +56,10 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
             console.log('[ServicesPage] skip API call: not controller wizard');
             return;
         }
-        if (!Array.isArray(linkedModules) || linkedModules.length === 0) {
-            console.log('[ServicesPage] skip API call: linkedModules is empty');
+        const hasSw = Array.isArray(linkedModules) && linkedModules.length > 0;
+        const hasHw = Array.isArray(linkedHwModules) && linkedHwModules.length > 0;
+        if (!hasSw && !hasHw) {
+            console.log('[ServicesPage] skip API call: linked aspects empty');
             setLinkedModuleData([]);
             setLoadingError('');
             return;
@@ -68,7 +71,7 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
             setLoadingModules(true);
             setLoadingError('');
             try {
-                const response = await registryService.getLinkedModuleData(linkedModules);
+                const response = await registryService.getLinkedModuleData(linkedModules, linkedHwModules);
                 console.log('[ServicesPage] getLinkedModuleData success', {
                     modulesCount: Array.isArray(response?.modules) ? response.modules.length : 0
                 });
@@ -88,14 +91,14 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
         return () => {
             isMounted = false;
         };
-    }, [isControllerWizard, linkedModules]);
+    }, [isControllerWizard, linkedModules, linkedHwModules, wizardType]);
 
     // 모듈별로 그룹화된 Service Methods
     const groupedLinkedMethods = useMemo(() => {
         const grouped = {};
         linkedModuleData.forEach(moduleInfo => {
             const moduleID = moduleInfo.moduleID || '';
-            const moduleName = moduleInfo.moduleName || moduleID;
+            const moduleName = getLinkedSourceLabel(moduleInfo);
             
             if (!grouped[moduleID]) {
                 grouped[moduleID] = {
@@ -145,13 +148,16 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
         }));
     };
 
-    const hasMethodInServices = (methodName, profileID) => {
+    const hasMethodInServices = (methodName, profileID, sourceModuleID) => {
         const profiles = services?.serviceProfiles || [];
         const profile = profiles.find(p => (p?.ID || '') === (profileID || ''));
         if (!profile) return false;
         const methods = (profile?.methodLists || []).flatMap(item => normalizeMethodCandidates(item));
         const fallbackMethods = methods.length > 0 ? methods : (profile?.serviceMethods || []);
-        return fallbackMethods.some(method => method?.methodName === methodName);
+        return fallbackMethods.some(method =>
+            method?.methodName === methodName &&
+            moduleIDKey(method?.moduleID) === moduleIDKey(sourceModuleID)
+        );
     };
 
     const handleToggleLinkedMethod = (item) => {
@@ -181,17 +187,23 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
         }
 
         const existingMethods = (profile.methodLists || []).flatMap(m => normalizeMethodCandidates(m));
-        const alreadyAdded = existingMethods.some(m => m?.methodName === item.method.methodName);
+        const sourceModuleID = item.method.moduleID || toModuleIDPair(item.moduleID);
+        const alreadyAdded = existingMethods.some(m =>
+            m?.methodName === item.method.methodName &&
+            moduleIDKey(m?.moduleID) === moduleIDKey(sourceModuleID)
+        );
 
         if (alreadyAdded) {
             profile.methodLists = (profile.methodLists || []).flatMap(methodItem => {
                 const filtered = normalizeMethodCandidates(methodItem).filter(
-                    method => method?.methodName !== item.method.methodName
+                    method => !(method?.methodName === item.method.methodName &&
+                        moduleIDKey(method?.moduleID) === moduleIDKey(sourceModuleID))
                 );
                 return filtered.length > 0 ? [{ method: filtered }] : [];
             });
             profile.serviceMethods = (profile.serviceMethods || []).filter(
-                method => method?.methodName !== item.method.methodName
+                method => !(method?.methodName === item.method.methodName &&
+                    moduleIDKey(method?.moduleID) === moduleIDKey(sourceModuleID))
             );
             if (onChange) onChange(updatedServices);
             return;
@@ -203,7 +215,7 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
             retType: item.method.retType || '',
             MOType: item.method.MOType || '',
             reqProvType: item.method.reqProvType || '',
-            moduleID: item.method.moduleID || null,
+            moduleID: sourceModuleID,
             argSpecs: item.method.argSpecs || []
         };
         profile.methodLists = [...(profile.methodLists || []), { method: [normalized] }];
@@ -212,16 +224,17 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
         if (onChange) onChange(updatedServices);
     };
 
-    if (isControllerWizard) {
-        return (
-            <div className="services-page" style={{ height: '100%', minHeight: 0, overflow: 'hidden' }}>
-                <div className="service-input-area-compact" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+    const linkedServicesPanel = (
+            <div style={{ marginBottom: 14, border: '1px solid #e1e5e9', borderRadius: 8, background: '#f8f9fa' }}>
+                <div style={{ maxHeight: 260, overflowY: 'auto', padding: '14px 16px' }}>
                     <div className="input-block">
-                        <div className="input-title">Linked Service Methods (from IDnType Add)</div>
+                        <div className="input-title">Selectable Services by Controller / Module <span style={{ color: '#777', fontSize: 12, fontWeight: 400 }}>(Optional)</span></div>
                         {loadingModules && <div>Loading service methods...</div>}
                         {!loadingModules && loadingError && <div>{loadingError}</div>}
                         {!loadingModules && !loadingError && Object.keys(groupedLinkedMethods).length === 0 && (
-                            <div>표시할 서비스가 없습니다. IDnType에서 모듈을 Add 해주세요.</div>
+                            <div style={{ color: '#666', fontSize: 13 }}>
+                                연결된 모듈의 서비스가 없습니다. 가져오기는 선택 사항이며 아래에서 직접 입력할 수 있습니다.
+                            </div>
                         )}
                         {!loadingModules && Object.keys(groupedLinkedMethods).length > 0 && (
                             <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -264,7 +277,11 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
                                                 <div style={{ padding: '12px', borderTop: '1px solid #e1e5e9' }}>
                                                     {moduleGroup.methods.map((item, idx) => {
                                                         const profileID = item?.profile?.ID || item?.moduleID || 'linked-profile';
-                                                        const added = hasMethodInServices(item.method.methodName, profileID);
+                                                        const added = hasMethodInServices(
+                                                            item.method.methodName,
+                                                            profileID,
+                                                            item.method.moduleID || toModuleIDPair(item.moduleID)
+                                                        );
                                                         return (
                                                             <div
                                                                 key={`${item.moduleID}-${item.method.methodName}-${idx}`}
@@ -314,12 +331,17 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
                 </div>
             </div>
         );
-    }
 
 
 
     return (
         <div className="services-page" style={{ height: '100%', minHeight: 0, overflow: 'hidden' }}>
+            {isControllerWizard && linkedServicesPanel}
+            {isControllerWizard && (
+                <div className="input-title" style={{ margin: '0 0 8px 4px' }}>
+                    {wizardType === 'robot' ? 'Robot Service Editor (Manual)' : 'Controller Service Editor (Manual)'}
+                </div>
+            )}
             {/* 상단 서비스 개수 입력 */}
             <div className="services-header-compact">
                 <div className="service-group-compact">

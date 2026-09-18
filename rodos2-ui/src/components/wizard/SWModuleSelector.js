@@ -1,5 +1,6 @@
 import React from 'react';
 import '../../styles/wizard/IDnTypePage.css';
+import { AvailableModulesGrid } from './AvailableModulesGrid';
 
 function SWModuleSelector({
     title = 'Software Modules',
@@ -43,39 +44,11 @@ function SWModuleSelector({
                     {loading ? (
                         <div className="loading">Loading modules...</div>
                     ) : (
-                        <div className="sw-modules-table">
-                            <table>
-                                <thead>
-                                    <tr>
-                                        <th>Name</th>
-                                        <th>Module ID</th>
-                                        <th>Action</th>
-                                    </tr>
-                                </thead>
-                                <tbody>
-                                    {availableModules.map((module) => {
-                                        const isSelected = selectedModules.some(m => m.moduleID === module.moduleID);
-                                        return (
-                                            <tr key={module.moduleID} className={isSelected ? 'selected' : ''}>
-                                                <td>{module.moduleName}</td>
-                                                <td title={module.moduleID}>{module.moduleID}</td>
-                                                <td>
-                                                    <button
-                                                        type="button"
-                                                        className={`add-btn ${isSelected ? 'disabled' : ''}`}
-                                                        onClick={() => !isSelected && onToggleModule(module)}
-                                                        disabled={isSelected}
-                                                        title={isSelected ? 'Already selected' : 'Add module'}
-                                                    >
-                                                        {isSelected ? 'Selected' : '+ Add'}
-                                                    </button>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })}
-                                </tbody>
-                            </table>
-                        </div>
+                        <AvailableModulesGrid
+                            modules={availableModules}
+                            isSelected={(m) => selectedModules.some(x => x.moduleID === m.moduleID)}
+                            onToggle={onToggleModule}
+                        />
                     )}
                 </div>
             </div>

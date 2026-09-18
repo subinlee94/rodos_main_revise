@@ -30,17 +30,19 @@ export const registryService = {
         }
     },
 
-    // IDnType의 swAspects 기준으로 연결 모듈의 services/ioVariables 조회
-    async getLinkedModuleData(swAspects = []) {
+    // IDnType의 swAspects(+ hwAspects에 연결된 SW) 기준으로 services/ioVariables/properties 조회
+    async getLinkedModuleData(swAspects = [], hwAspects = []) {
         try {
             console.log('[registryService] request /api/registry/module/linked-data', {
                 swAspectsLength: Array.isArray(swAspects) ? swAspects.length : 'not-array',
-                swAspects
+                hwAspectsLength: Array.isArray(hwAspects) ? hwAspects.length : 'not-array',
+                swAspects,
+                hwAspects
             });
             const response = await fetch('/api/registry/module/linked-data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ swAspects })
+                body: JSON.stringify({ swAspects, hwAspects })
             });
             console.log('[registryService] response /api/registry/module/linked-data', {
                 ok: response.ok,

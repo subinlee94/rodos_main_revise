@@ -122,6 +122,13 @@
     z-index: 3;
 }
 
+.controller-parent-label {
+    margin-top: 3px;
+    color: #1565c0;
+    font-size: 12px;
+    font-weight: 700;
+}
+
 /* SW 모듈 컨테이너 */
 .sw-module-container {
     position: absolute;

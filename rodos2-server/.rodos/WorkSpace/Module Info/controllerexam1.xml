@@ -1,0 +1,109 @@
+<Module type="Composite">
+  <moduleName>controllerexam1</moduleName>
+  <manufactures>controllerexam2</manufactures>
+  <description>controllerexam1</description>
+  <examples>controllerexam2</examples>
+  <idnType>
+    <moduleID>
+      <mID>f29e62338b0f56bb895536000b07a3cf0613111512345678437f3e8a000000</mID>
+      <iID>ff</iID>
+    </moduleID>
+    <swAspects>
+      <moduleID>
+        <mID>e4f9970fef8f56d397451d3891318b490023AD5300000000000000008C5000</mID>
+        <iID>00</iID>
+      </moduleID>
+    </swAspects>
+    <hwAspects/>
+    <informationModelVersion>1.0</informationModelVersion>
+  </idnType>
+  <properties>
+    <Property complexType="NONE" name="controllerexam1" type="uint16" unit="g" description="controllerexam">
+      <values>
+        <item>controllerexam</item>
+      </values>
+    </Property>
+    <osType>
+      <type>Ubuntu</type>
+      <bit>BIT16</bit>
+      <version>18.04</version>
+    </osType>
+    <compiler>
+      <osname></osname>
+      <verRangeOS/>
+      <verRangeCompiler/>
+    </compiler>
+    <organization>
+      <owner/>
+      <dependency/>
+    </organization>
+  </properties>
+  <ioVariables>
+    <Inputs>
+      <Input name="tf" type="tf2_msgs.msg.TFMessage" unit="" description="urdf-based coordinate system topic">
+        <moduleID>
+          <mID>e4f9970fef8f56d397451d3891318b490023AD5300000000000000008C5000</mID>
+          <iID>00</iID>
+        </moduleID>
+      </Input>
+    </Inputs>
+  </ioVariables>
+  <services>
+    <NoOfBasicService>0</NoOfBasicService>
+    <NoOfOptionalService>0</NoOfOptionalService>
+    <ServiceXML/>
+    <ServiceXML>
+      <methodList>
+        <Method methodName="pick_and_place" description="A robotic arm grabs an object and puts it down">
+          <argType type="geometry_msgs.msg.Pose" valueName="target_position" inout="IN"/>
+          <argType type="geometry_msgs.msg.Pose" valueName="goal_position" inout="IN"/>
+          <retType>bool</retType>
+          <reqProvType>PROVIDED</reqProvType>
+          <moduleID>
+            <mID>53f960047e4a5fbfacb242a920d349b600A2FC15D135C1890000000012301000</mID>
+            <iID>00</iID>
+          </moduleID>
+        </Method>
+      </methodList>
+      <methodList>
+        <Method methodName="request_put" description="A robot arm puts an object down in a certain position">
+          <argType type="geometry_msgs.msg.Pose" valueName="position" inout="IN"/>
+          <retType>bool</retType>
+          <reqProvType>PROVIDED</reqProvType>
+          <moduleID>
+            <mID>53f960047e4a5fbfacb242a920d349b600A2FC15D135C1890000000012301000</mID>
+            <iID>00</iID>
+          </moduleID>
+        </Method>
+      </methodList>
+      <methodList>
+        <Method methodName="request_pickup" description="A service request to the robot arm to pick up an object that exists in a specific pose. The pose in the input is the pose of the target object.">
+          <argType type="geometry_msgs.msg.Pose" valueName="position" inout="IN"/>
+          <retType>bool</retType>
+          <reqProvType>PROVIDED</reqProvType>
+          <moduleID>
+            <mID>53f960047e4a5fbfacb242a920d349b600A2FC15D135C1890000000012301000</mID>
+            <iID>00</iID>
+          </moduleID>
+        </Method>
+      </methodList>
+    </ServiceXML>
+  </services>
+  <infra/>
+  <safeSecure>
+    <overallValidSafetyLevelType></overallValidSafetyLevelType>
+    <overallSafetyLevelPL></overallSafetyLevelPL>
+    <overallSafetyLevelSIL></overallSafetyLevelSIL>
+    <overallPhySecurityLevel></overallPhySecurityLevel>
+    <overallCybSecurityLevel></overallCybSecurityLevel>
+    <Safety/>
+    <Security/>
+  </safeSecure>
+  <modelling/>
+  <executableForm>
+    <ExeForms/>
+    <lib>
+      <urlnPaths/>
+    </lib>
+  </executableForm>
+</Module>

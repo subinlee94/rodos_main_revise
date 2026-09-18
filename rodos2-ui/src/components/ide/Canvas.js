@@ -5,7 +5,7 @@ import { useCanvasDragAndDrop } from '../../hooks/useCanvasDragAndDrop';
 import { moduleAPI } from '../../services/api';
 import '../../styles/ide/Canvas.css';
 
-const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, ref) => {
+const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenLinkedWizard }, ref) => {
     const isControllerModule = (hwModule) => {
         if (!hwModule) return false;
         const moduleType = `${hwModule.moduleType || hwModule.type || hwModule.originalModuleType || ''}`.toLowerCase();
@@ -22,9 +22,11 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
         updateHWModulePosition,
         updateHWModuleToComposite,
         updateControllerModuleInfo,
+        linkControllerToRobot,
         addSWModule,
         updateSWModulePosition,
         removeSWModule,
+        removeHWModule,
         setDragState,
         setSWDragState,
         clearDragState,
@@ -45,7 +47,7 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
         setDragState, setSWDragState, clearDragState,
         addHWModule, addSWModule, removeSWModule,
         updateHWModulePosition, updateSWModulePosition, setDragOverHexIdx,
-        onOpenControllerWizard
+        onOpenLinkedWizard
     );
 
     // ref를 통해 외부에서 호출할 수 있는 함수들 노출
@@ -103,6 +105,15 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
     const handleHexDragLeave = () => setDragOverHexIdx(null);
 
     const handleCanvasMouseUp = () => {
+        if (draggedModuleIdx !== null) {
+            const dragged = hwModules[draggedModuleIdx];
+            if (`${dragged?.moduleType || dragged?.type || ''}`.toLowerCase() === 'controller') {
+                const robotIdx = hwModules.findIndex((module, idx) => idx !== draggedModuleIdx
+                    && `${module?.moduleType || module?.type || ''}`.toLowerCase() === 'robot'
+                    && Math.hypot((module.x || 0) - (dragged.x || 0), (module.y || 0) - (dragged.y || 0)) <= 120);
+                if (robotIdx >= 0) linkControllerToRobot(draggedModuleIdx, robotIdx);
+            }
+        }
         clearDragState();
     };
 
@@ -150,12 +161,14 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
             contextMenu.style.zIndex = '1000';
             contextMenu.style.padding = '4px 0';
 
-            const createMenuItem = (label, onClick) => {
+            const createMenuItem = (label, onClick, destructive = false) => {
                 const item = document.createElement('div');
                 item.textContent = label;
                 item.style.padding = '8px 16px';
                 item.style.cursor = 'pointer';
                 item.style.fontSize = '14px';
+                item.style.color = destructive ? '#d32f2f' : '#222';
+                item.style.fontWeight = destructive ? '700' : '400';
                 item.onmouseover = () => item.style.backgroundColor = '#f0f0f0';
                 item.onmouseout = () => item.style.backgroundColor = 'transparent';
                 item.onclick = async () => {
@@ -175,7 +188,15 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
             if (!hwModule.isComposite) {
                 contextMenu.appendChild(createMenuItem('Apply', async () => {
                     if (onOpenCompositeWizard) {
-                        onOpenCompositeWizard(idx, hwModule, 'composite-check-only');
+                        const moduleType = `${hwModule.moduleType || hwModule.type || ''}`.toLowerCase();
+                        const robotRefs = [hwModule.moduleID, hwModule.ref, hwModule.name].filter(Boolean);
+                        const linkedControllers = moduleType === 'robot'
+                            ? hwModules.filter(module => (
+                                `${module.moduleType || module.type || ''}`.toLowerCase() === 'controller'
+                                && robotRefs.includes(module.parentRobotRef)
+                            ))
+                            : [];
+                        onOpenCompositeWizard(idx, { ...hwModule, linkedControllers }, 'composite-check-only');
                     }
                 }));
             }
@@ -185,6 +206,29 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
                 await moduleAPI.saveXML(moduleData);
                 alert('XML saved to Workspace/Module Info');
             }));
+
+            const separator = document.createElement('div');
+            separator.style.borderTop = '1px solid #e5e5e5';
+            separator.style.margin = '4px 0';
+            contextMenu.appendChild(separator);
+
+            contextMenu.appendChild(createMenuItem('Delete', async () => {
+                const moduleType = `${hwModule.moduleType || hwModule.type || ''}`.toLowerCase();
+                const childCount = Array.isArray(hwModule.swModules) ? hwModule.swModules.length : 0;
+                const linkedControllers = moduleType === 'robot'
+                    ? hwModules.filter(module => [hwModule.moduleID, hwModule.ref, hwModule.name]
+                        .filter(Boolean).includes(module.parentRobotRef)).length
+                    : 0;
+                const detail = moduleType === 'robot' && linkedControllers > 0
+                    ? `\n연결된 Controller ${linkedControllers}개도 함께 삭제됩니다.`
+                    : childCount > 0
+                        ? `\n하위 Software ${childCount}개도 함께 삭제됩니다.`
+                        : '';
+
+                if (window.confirm(`'${hwModule.name}' 모듈을 삭제하시겠습니까?${detail}`)) {
+                    removeHWModule(idx);
+                }
+            }, true));
 
             document.body.appendChild(contextMenu);
 
@@ -219,6 +263,8 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
                 return '#2196F3'; // 파란색
             case 'controller':
                 return '#FF9800'; // 주황색
+            case 'robot':
+                return '#E91E63'; // 로봇 육각형
             default:
                 return '#9E9E9E'; // 회색
         }
@@ -290,6 +336,7 @@ const Canvas = forwardRef(({ onOpenCompositeWizard, onOpenControllerWizard }, re
                             )}
                             <div className="hw-module-label">
                                 {hw.name} {!hw.isComposite && `(${hw.moduleType})`}
+                                {hw.parentRobotName && <div className="controller-parent-label">Linked to {hw.parentRobotName}</div>}
                             </div>
                             {/* SW 모듈(원형) 렌더 */}
                             {hw.swModules && hw.swModules.map((sw, swIdx) => (

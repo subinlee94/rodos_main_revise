@@ -208,6 +208,21 @@ public class SharedUserStateController {
     /**
      * 현재 SharedUserState에서 HW 모듈 목록 가져오기 (HwMappingDialog용)
      */
+    /**
+     * Execute 전 Robot/SW 구성·HW Mapping·Simulation 설정 검증
+     */
+    @GetMapping("/validate-execute")
+    public ResponseEntity<Map<String, Object>> validateExecute() {
+        try {
+            SharedUserState state = sharedUserStateService.loadCurrentState();
+            return ResponseEntity.ok(sharedUserStateService.validateExecuteReadiness(state));
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.internalServerError()
+                    .body(Map.of("valid", false, "errors", List.of("검증 실패: " + e.getMessage())));
+        }
+    }
+
     @GetMapping("/hw-modules")
     public ResponseEntity<List<Map<String, Object>>> getHWModules() {
         try {
@@ -227,7 +242,14 @@ public class SharedUserStateController {
                     Map<String, Object> moduleInfo = new java.util.HashMap<>();
                     moduleInfo.put("name", hw.get("name") != null ? hw.get("name").toString() : "");
                     moduleInfo.put("type", hw.get("type") != null ? hw.get("type").toString() : "");
-                    moduleInfo.put("targetName", hw.get("name") != null ? hw.get("name").toString() : "");
+                    moduleInfo.put("moduleType",
+                            hw.get("moduleType") != null ? hw.get("moduleType").toString() : "");
+                    moduleInfo.put("targetName",
+                            hw.get("targetName") != null ? hw.get("targetName").toString()
+                                    : (hw.get("name") != null ? hw.get("name").toString() : ""));
+                    if (hw.get("target") != null) {
+                        moduleInfo.put("target", hw.get("target").toString());
+                    }
 
                     // SW 모듈들 포함
                     if (hw.get("swModules") != null) {
@@ -563,12 +585,18 @@ public class SharedUserStateController {
         Integer totalExecuted = (Integer) executeResult.get("totalExecuted");
         Integer totalFailed = (Integer) executeResult.get("totalFailed");
 
+        @SuppressWarnings("unchecked")
+        java.util.List<String> failedModules = (java.util.List<String>) executeResult.get("failedModules");
+
         if (success != null && success) {
             response.put("message", "Container deployment requests sent for " + totalExecuted + " modules");
             response.put("note", "Containers are starting in background");
         } else {
-            response.put("message", "Container deployment failed for " + totalFailed + " modules");
-            response.put("error", "Deployment failed");
+            String detail = (failedModules != null && !failedModules.isEmpty())
+                    ? String.join("; ", failedModules)
+                    : "Deployment failed";
+            response.put("message", detail);
+            response.put("error", detail);
         }
 
         return response;

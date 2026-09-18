@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import '../../styles/wizard/IDnTypePage.css';
 import { useIDnTypeState } from '../../hooks/useIDnTypeState';
+import { AvailableModulesGrid } from './AvailableModulesGrid';
 
 const CATEGORY_BY_UPPER4 = {
     '0000': 'Planning',
@@ -70,7 +71,11 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
         hwLoading,
         handleHWModuleToggle
     } = useIDnTypeState(idnType, onChange, genInfo, moduleID, moduleIDString);
-    const isControllerWizard = wizardType === 'controller';
+    const isCompParentWizard = wizardType === 'controller' || wizardType === 'robot';
+    const showSwAspectsSection = initGenInfo.idType === 'Comp' && (
+        wizardType === 'software' || wizardType === 'controller' || wizardType === 'composite' || wizardType === 'robot'
+    );
+    const showHwAspectsSection = initGenInfo.idType === 'Comp' && (wizardType === 'robot' || wizardType === 'composite');
     const [openCategories, setOpenCategories] = useState({});
 
     const groupedSWModules = useMemo(() => {
@@ -85,6 +90,14 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
             return acc;
         }, {});
     }, [swModules]);
+
+    // A Robot composite selects its constituent controller instances here.
+    // Other composite types retain the broader HW module list.
+    const availableHWModules = useMemo(() => (
+        wizardType === 'robot'
+            ? hwModules.filter(module => module.moduleType === 'controller' || module.type === 'controller')
+            : hwModules
+    ), [hwModules, wizardType]);
 
     const toggleCategory = (category) => {
         setOpenCategories(prev => ({ ...prev, [category]: !prev[category] }));
@@ -151,10 +164,14 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
                     </div>
                 </div>
 
-                {/* SWAspects 섹션 - Composite 타입이고 software/controller/composite일 때만 표시 */}
-                {initGenInfo.idType === 'Comp' && (wizardType === 'software' || wizardType === 'controller' || wizardType === 'composite') && (
+                {/* SWAspects — Comp + Robot/Controller(카테고리 그리드) / Software / Composite */}
+                {showSwAspectsSection && (
                     <div className="sw-aspects-section">
                         <h3>Software Modules</h3>
+                        <p className="section-hint">
+                            Properties / IOVariables / Services 계승에 사용할 <strong>Software</strong>를 선택합니다.
+                            WorkSpace(Module Info) XML과 캔버스에 연결된 SW도 표시됩니다.
+                        </p>
 
                         {/* 사전 설정된 SW Modules 표시 */}
                         {swAspects && swAspects.length > 0 && (
@@ -207,7 +224,7 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
                                 <h4>Available Modules</h4>
                                 {loading ? (
                                     <div className="loading">Loading modules...</div>
-                                ) : isControllerWizard ? (
+                                ) : isCompParentWizard ? (
                                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                                         {Object.entries(groupedSWModules).map(([category, modules]) => {
                                             const isOpen = !!openCategories[category];
@@ -234,39 +251,11 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
                                                                 No modules in this category
                                                             </div>
                                                         ) : (
-                                                            <div className="sw-modules-table">
-                                                                <table>
-                                                                    <thead>
-                                                                        <tr>
-                                                                            <th>Name</th>
-                                                                            <th>Module ID</th>
-                                                                            <th>Action</th>
-                                                                        </tr>
-                                                                    </thead>
-                                                                    <tbody>
-                                                                        {modules.map((module) => {
-                                                                            const isSelected = selectedSWModules.some(m => m.moduleID === module.moduleID);
-                                                                            return (
-                                                                                <tr key={module.moduleID} className={isSelected ? 'selected' : ''}>
-                                                                                    <td>{module.moduleName}</td>
-                                                                                    <td title={module.moduleID}>{module.moduleID}</td>
-                                                                                    <td>
-                                                                                        <button
-                                                                                            type="button"
-                                                                                            className={`add-btn ${isSelected ? 'disabled' : ''}`}
-                                                                                            onClick={() => !isSelected && handleSWModuleToggle(module)}
-                                                                                            disabled={isSelected}
-                                                                                            title={isSelected ? 'Already selected' : 'Add module'}
-                                                                                        >
-                                                                                            {isSelected ? 'Selected' : '+ Add'}
-                                                                                        </button>
-                                                                                    </td>
-                                                                                </tr>
-                                                                            );
-                                                                        })}
-                                                                    </tbody>
-                                                                </table>
-                                                            </div>
+                                                            <AvailableModulesGrid
+                                                                modules={modules}
+                                                                isSelected={(m) => selectedSWModules.some(x => x.moduleID === m.moduleID)}
+                                                                onToggle={handleSWModuleToggle}
+                                                            />
                                                         )
                                                     )}
                                                 </div>
@@ -274,49 +263,25 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
                                         })}
                                     </div>
                                 ) : (
-                                    <div className="sw-modules-table">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Module ID</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {swModules.map((module) => {
-                                                    const isSelected = selectedSWModules.some(m => m.moduleID === module.moduleID);
-                                                    return (
-                                                        <tr key={module.moduleID} className={isSelected ? 'selected' : ''}>
-                                                            <td>{module.moduleName}</td>
-                                                            <td title={module.moduleID}>{module.moduleID}</td>
-                                                            <td>
-                                                                <button
-                                                                    type="button"
-                                                                    className={`add-btn ${isSelected ? 'disabled' : ''}`}
-                                                                    onClick={() => !isSelected && handleSWModuleToggle(module)}
-                                                                    disabled={isSelected}
-                                                                    title={isSelected ? 'Already selected' : 'Add module'}
-                                                                >
-                                                                    {isSelected ? 'Selected' : '+ Add'}
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <AvailableModulesGrid
+                                        modules={swModules}
+                                        isSelected={(m) => selectedSWModules.some(x => x.moduleID === m.moduleID)}
+                                        onToggle={handleSWModuleToggle}
+                                    />
                                 )}
                             </div>
                         </div>
                     </div>
                 )}
 
-                {/* HWAspects 섹션 - Composite 타입이고 robot/composite일 때만 표시 */}
-                {initGenInfo.idType === 'Comp' && (wizardType === 'robot' || wizardType === 'composite') && (
+                {/* HWAspects — Robot / Composite */}
+                {showHwAspectsSection && (
                     <div className="hw-aspects-section">
-                        <h3>Hardware Modules</h3>
+                        <h3>{wizardType === 'robot' ? 'Linked Controllers' : 'Hardware Modules'}</h3>
+                        <p className="section-hint">
+                            Robot에 연결할 <strong>Edge / Controller / Robot(HW)</strong> 참조입니다.
+                            Controller만 선택한 경우, 해당 Controller의 <strong>swAspects</strong>에 등록된 SW가 다음 단계에서 불러와집니다.
+                        </p>
 
                         {/* 사전 설정된 HW Module 표시 */}
                         {hwAspects && hwAspects.length > 0 && (
@@ -343,6 +308,11 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
                             {/* 선택된 HW 모듈 목록 */}
                             <div className="selected-modules">
                                 <h4>Selected ({selectedHWModules.length})</h4>
+                                {wizardType === 'robot' && selectedHWModules.length > 1 && (
+                                    <p className="section-hint">
+                                        Properties, IOVariables and Services can be selected per controller in the next steps.
+                                    </p>
+                                )}
                                 {selectedHWModules.length === 0 ? (
                                     <p className="no-modules">No modules selected</p>
                                 ) : (
@@ -373,39 +343,11 @@ function IDnTypePage({ idnType, onChange, genInfo, moduleID, moduleIDString, swA
                                 {hwLoading ? (
                                     <div className="loading">Loading modules...</div>
                                 ) : (
-                                    <div className="sw-modules-table">
-                                        <table>
-                                            <thead>
-                                                <tr>
-                                                    <th>Name</th>
-                                                    <th>Module ID</th>
-                                                    <th>Action</th>
-                                                </tr>
-                                            </thead>
-                                            <tbody>
-                                                {hwModules.map((module) => {
-                                                    const isSelected = selectedHWModules.some(m => m.moduleID === module.moduleID);
-                                                    return (
-                                                        <tr key={module.moduleID} className={isSelected ? 'selected' : ''}>
-                                                            <td>{module.moduleName}</td>
-                                                            <td title={module.moduleID}>{module.moduleID}</td>
-                                                            <td>
-                                                                <button
-                                                                    type="button"
-                                                                    className={`add-btn ${isSelected ? 'disabled' : ''}`}
-                                                                    onClick={() => !isSelected && handleHWModuleToggle(module)}
-                                                                    disabled={isSelected}
-                                                                    title={isSelected ? 'Already selected' : 'Add module'}
-                                                                >
-                                                                    {isSelected ? 'Selected' : '+ Add'}
-                                                                </button>
-                                                            </td>
-                                                        </tr>
-                                                    );
-                                                })}
-                                            </tbody>
-                                        </table>
-                                    </div>
+                                    <AvailableModulesGrid
+                                        modules={availableHWModules}
+                                        isSelected={(m) => selectedHWModules.some(x => x.moduleID === m.moduleID)}
+                                        onToggle={handleHWModuleToggle}
+                                    />
                                 )}
                             </div>
                         </div>

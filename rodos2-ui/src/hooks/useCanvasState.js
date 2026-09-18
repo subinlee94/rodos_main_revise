@@ -18,10 +18,11 @@ export function useCanvasState() {
         }
     }, [hwModules]);
 
-    const addHWModule = useCallback((name, x, y, moduleType, ref = null, classifier = null, controllerInfoModel = null) => {
-        console.log('addHWModule 호출됨:', { name, x, y, moduleType, ref, classifier, controllerInfoModel });
+    const addHWModule = useCallback((name, x, y, moduleType, ref = null, classifier = null, controllerInfoModel = null, moduleID = '') => {
+        console.log('addHWModule 호출됨:', { name, x, y, moduleType, ref, classifier, controllerInfoModel, moduleID });
         setHwModules(prev => {
-            const isController = `${moduleType || ''}`.toLowerCase() === 'controller';
+            const normalizedType = `${moduleType || ''}`.toLowerCase();
+            const storesParentInfoModel = normalizedType === 'controller' || normalizedType === 'robot';
             const newModule = {
                 name,
                 x,
@@ -29,11 +30,12 @@ export function useCanvasState() {
                 type: moduleType,
                 moduleType: moduleType, // Canvas.js에서 사용하는 필드
                 ref: ref, // SharedUserState의 ref 정보
+                moduleID: moduleID || ref || '',
                 classifier: classifier, // SharedUserState의 classifier 정보
                 swModules: [],
                 isComposite: false // Composite 모듈 여부
             };
-            if (isController && controllerInfoModel) {
+            if (storesParentInfoModel && controllerInfoModel) {
                 newModule.controllerInfoModel = controllerInfoModel;
             }
             console.log('새로운 HW 모듈 생성:', newModule);
@@ -44,6 +46,24 @@ export function useCanvasState() {
             return newModules;
         });
     }, [saveCanvasState]);
+
+    const linkControllerToRobot = useCallback((controllerIdx, robotIdx) => {
+        setHwModules(prev => {
+            const controller = prev[controllerIdx];
+            const robot = prev[robotIdx];
+            if (!controller || !robot || `${controller.moduleType || controller.type}`.toLowerCase() !== 'controller'
+                || `${robot.moduleType || robot.type}`.toLowerCase() !== 'robot') return prev;
+
+            const parentRobotRef = robot.moduleID || robot.ref || robot.name;
+            return prev.map((module, idx) => idx === controllerIdx ? {
+                ...module,
+                parentRobotRef,
+                parentRobotName: robot.name,
+                x: robot.x,
+                y: robot.y
+            } : module);
+        });
+    }, []);
 
     const updateHWModulePosition = useCallback((idx, x, y) => {
         setHwModules(prev => {
@@ -151,6 +171,22 @@ export function useCanvasState() {
             return newModules;
         });
     }, [saveCanvasState]);
+
+    const removeHWModule = useCallback((hwIdx) => {
+        setHwModules(prev => {
+            const target = prev[hwIdx];
+            if (!target) return prev;
+
+            const targetType = `${target.moduleType || target.type || ''}`.toLowerCase();
+            const targetRefs = new Set([target.moduleID, target.ref, target.name].filter(Boolean));
+
+            return prev.filter((module, idx) => {
+                if (idx === hwIdx) return false;
+                if (targetType !== 'robot') return true;
+                return !targetRefs.has(module.parentRobotRef);
+            });
+        });
+    }, []);
 
     const setDragState = useCallback((moduleIdx, offset) => {
         setDraggedModuleIdx(moduleIdx);
@@ -277,9 +313,11 @@ export function useCanvasState() {
         updateHWModulePosition,
         updateHWModuleToComposite,
         updateControllerModuleInfo,
+        linkControllerToRobot,
         addSWModule,
         updateSWModulePosition,
         removeSWModule,
+        removeHWModule,
         setDragState,
         setSWDragState,
         clearDragState,
