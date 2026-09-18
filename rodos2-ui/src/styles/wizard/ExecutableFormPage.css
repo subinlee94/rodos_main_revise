@@ -1,0 +1,271 @@
+/* ExecutableFormPage 스타일 - PropertiesPage/InfrastructurePage와 통일 */
+.executable-form-page {
+    padding: 20px;
+    height: 100%;
+    overflow-y: auto;
+}
+
+/* 탭 스타일 */
+.executable-form-tabs {
+    display: flex;
+    border-bottom: 1px solid #ddd;
+    margin-bottom: 20px;
+}
+
+.executable-form-tab {
+    padding: 12px 24px;
+    border: none;
+    background: #f8f9fa;
+    color: #666;
+    font-size: 14px;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s;
+}
+
+.executable-form-tab:hover {
+    background: #e9ecef;
+    color: #333;
+}
+
+.executable-form-tab.active {
+    background: #fff;
+    color: #333;
+    border-bottom-color: #007bff;
+}
+
+/* 컨텐츠 영역 - 단순화된 레이아웃 */
+.executable-form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    height: calc(100% - 80px);
+}
+
+/* 입력 섹션 */
+.executable-form-input-section {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    background: #fff;
+}
+
+/* 가로 2칸 배치를 위한 행 스타일 */
+.executable-form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+    align-items: flex-start;
+}
+
+.executable-form-row:last-child {
+    margin-bottom: 0;
+}
+
+.executable-form-group {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.executable-form-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 500;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.executable-form-input {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    margin-bottom: 0;
+    box-sizing: border-box;
+}
+
+.executable-form-input:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.executable-form-input--full {
+    width: 100%;
+}
+
+.executable-form-textarea {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-family: inherit;
+    resize: vertical;
+    min-height: 80px;
+    box-sizing: border-box;
+}
+
+.executable-form-textarea:focus {
+    outline: none;
+    border-color: #007bff;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* Property 섹션 */
+.executable-form-property-section {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    padding: 20px;
+    background: #fff;
+    flex: 1;
+}
+
+.executable-form-property-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+}
+
+.executable-form-property-tree {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    min-height: 200px;
+    background: #f8f9fa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.executable-form-property-placeholder {
+    color: #666;
+    font-style: italic;
+    padding: 20px;
+    text-align: center;
+    width: 100%;
+}
+
+/* 버튼 스타일 */
+.executable-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+    justify-content: flex-start;
+}
+
+.executable-form-btn {
+    padding: 8px 16px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background: #fff;
+    color: #333;
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    min-width: 100px;
+}
+
+.executable-form-btn:hover:not(:disabled) {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+}
+
+.executable-form-btn:disabled {
+    background: #f8f9fa;
+    color: #6c757d;
+    cursor: not-allowed;
+}
+
+.executable-form-btn--small {
+    flex: none;
+    padding: 6px 12px;
+    font-size: 12px;
+}
+
+.executable-form-btn--danger {
+    color: #dc3545;
+    border-color: #dc3545;
+}
+
+.executable-form-btn--danger:hover:not(:disabled) {
+    background: #dc3545;
+    color: #fff;
+}
+
+/* 테이블 스타일 */
+.executable-form-table-container {
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 20px;
+}
+
+.executable-form-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.executable-form-table th {
+    background: #f8f9fa;
+    padding: 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #ddd;
+}
+
+.executable-form-table td {
+    padding: 12px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+}
+
+.executable-form-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.executable-form-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.executable-form-table tbody tr.selected {
+    background: #e3f2fd;
+    border-left: 3px solid #007bff;
+}
+
+.executable-form-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* LibURL 섹션 */
+.executable-form-lib-section {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .executable-form-content {
+        gap: 15px;
+    }
+
+    .executable-form-actions {
+        flex-direction: column;
+    }
+
+    .executable-form-btn {
+        width: 100%;
+    }
+
+    .executable-form-row {
+        flex-direction: column;
+        gap: 15px;
+    }
+}

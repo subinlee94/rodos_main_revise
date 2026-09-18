@@ -1,0 +1,97 @@
+<Module>
+  <GenInfo>
+    <ModuleName>Laser_Avoidance_Node</ModuleName>
+    <Manufactures>https://iic.kangwon.ac.kr</Manufactures>
+    <Description>This node that uses a 2D lidar to avoid obstacles.</Description>
+    <Examples></Examples>
+  </GenInfo>
+  <IDnType type="Bas">
+    <ID>0c95eb9da4e156248d865fea1499ca3f-0000000-fbfbfbbb-0-140000-0</ID>
+    <informationModelVersion>1.0</informationModelVersion>
+  </IDnType>
+  <Properties>
+    <OStype type="Ubuntu" bits="64" version="20.04"/>
+    <CompilerType>
+      <osName>Ubuntu</osName>
+      <verRangeOS min="18.04" max="22.04"/>
+      <compilerName>gcc</compilerName>
+      <verRangeCompiler min="8.5.0" max="10.3.0"/>
+      <BitsnCPUarch bits="64" CPUarch="ARM"/>
+    </CompilerType>
+    <ExecutionType>
+      <ExecutionType priorty="1" opType="EVENTDRIVEN" hardRT="FALSE" timeConstraint="100" instanceType="Singleton"/>
+    </ExecutionType>
+  </Properties>
+  <IOVariables>
+    <Inputs>
+      <Input name="/scan" type="sensor_msgs/LaserScan">
+        <Input name="header" type="std_msgs/Header"/>
+        <Input name="angle_min" type="float32"/>
+        <Input name="angle_max" type="float32"/>
+        <Input name="angle_increment" type="float32"/>
+        <Input name="time_increment" type="float32"/>
+        <Input name="scan_time" type="float32"/>
+        <Input name="range_min" type="float32"/>
+        <Input name="range_max" type="float32"/>
+        <Input name="ranges" type="float32 []"/>
+        <Input name="intensities" type="float32 []"/>
+      </Input>
+    </Inputs>
+    <Outputs>
+      <Output name="/cmd_vel" type="geometry_msgs/Twist">
+        <Output name="linear" type="Vector3"/>
+        <Output name="angular" type="Vector3"/>
+      </Output>
+    </Outputs>
+  </IOVariables>
+  <Status/>
+  <Services/>
+  <Infra>
+    <Middleware>
+      <item>
+        <name>ROS2</name>
+        <version min="foxy" max="foxy"/>
+      </item>
+    </Middleware>
+    <Communication>
+      <item>
+        <item>
+          <Name>fastRTPS</Name>
+          <layerType>APP</layerType>
+        </item>
+        <item>
+          <Name>UDP</Name>
+          <layerType>APP</layerType>
+        </item>
+        <item>
+          <Name>Ethernet</Name>
+          <layerType>Underlying</layerType>
+        </item>
+      </item>
+    </Communication>
+  </Infra>
+  <SafeSecure/>
+  <Modelling>
+    <SimulationModel>
+      <Simulator>gazebo</Simulator>
+      <ModelFile type="SDF">
+        <Name>model.sdf</Name>
+        <Path>/root/.gazebo/models/turtlebot3_waffle/model.sdf</Path>
+      </ModelFile>
+      <Plugin>
+        <Name>turtlebot3_diff_drive</Name>
+        <Topic>
+          <item>cmd_vel</item>
+          <item>odom</item>
+        </Topic>
+      </Plugin>
+    </SimulationModel>
+  </Modelling>
+  <ExecutableForm>
+    <ExeForm>
+      <ExeFileURL>asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/tb3_laser_avoidance:latest</ExeFileURL>
+      <ShellCmd>docker run -it --network=host --privileged -e ROS_NAMESPACE=tb3_1 asia-northeast1-docker.pkg.dev/lg-robot-dev/lg-ai-registry/iiclab/tb3_laser_avoidance:latest</ShellCmd>
+    </ExeForm>
+    <LibURLs/>
+  </ExecutableForm>
+</Module>

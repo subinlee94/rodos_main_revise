@@ -1,0 +1,362 @@
+.registry-modules {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen', 'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue', sans-serif;
+    background: #ffffff;
+    border-radius: 4px;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.refresh-button {
+    background: #1976d2;
+    color: white;
+    border: none;
+    padding: 6px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: 500;
+    transition: background-color 0.3s;
+}
+
+.refresh-button:hover {
+    background: #1565c0;
+}
+
+.refresh-button:active {
+    background: #1976d2;
+}
+
+.registry-tree {
+    padding: 2px 0;
+    /* 상하 패딩 줄임 */
+    height: 100%;
+    overflow-y: auto;
+    /* 스크롤 성능 최적화 */
+    -webkit-overflow-scrolling: touch;
+    scroll-behavior: smooth;
+}
+
+.tree-node {
+    margin: 1px 0;
+    /* 노드 간격 줄임 */
+    position: relative;
+}
+
+.tree-label {
+    display: flex;
+    align-items: center;
+    padding: 4px 8px;
+    /* 패딩 줄임 */
+    cursor: pointer;
+    border-radius: 4px;
+    transition: all 0.2s ease;
+    margin: 0 2px;
+    /* 마진 줄임 */
+    border: 1px solid transparent;
+    position: relative;
+    min-height: 24px;
+    /* 최소 높이 줄임 */
+}
+
+.tree-label:hover {
+    background: #f5f7fa;
+    border-color: #bdbdbd;
+}
+
+.tree-label.selected {
+    background: #e3eaff;
+    color: #1976d2;
+    border-color: #1976d2;
+}
+
+.tree-arrow {
+    margin-right: 8px;
+    font-size: 10px;
+    color: #6c757d;
+    transition: transform 0.2s ease;
+    min-width: 12px;
+    text-align: center;
+}
+
+.tree-arrow.expanded {
+    transform: rotate(90deg);
+}
+
+.tree-label-text {
+    flex: 1;
+    font-size: 14px;
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+}
+
+.tree-icon {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+.tree-children {
+    margin-left: 16px;
+    /* 들여쓰기 줄임 */
+    border-left: 2px solid #e9ecef;
+    padding-left: 12px;
+    /* 패딩 줄임 */
+    position: relative;
+}
+
+.tree-children::before {
+    content: '';
+    position: absolute;
+    left: -2px;
+    top: 0;
+    bottom: 0;
+    background: #e0e0e0;
+    width: 2px;
+}
+
+.loading-container {
+    padding: 40px 20px;
+    text-align: center;
+    color: #6c757d;
+    background: #f8f9fa;
+    border-radius: 4px;
+    margin: 20px;
+}
+
+.loading-spinner {
+    display: inline-block;
+    width: 20px;
+    height: 20px;
+    border: 2px solid #e0e0e0;
+    border-radius: 50%;
+    border-top-color: #1976d2;
+    animation: spin 1s ease-in-out infinite;
+    margin-right: 8px;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 모듈 타입별 아이콘 스타일 */
+.module-icon-ai {
+    color: #e91e63;
+}
+
+.module-icon-software {
+    color: #ff9800;
+}
+
+.module-icon-edge {
+    color: #2196f3;
+}
+
+.module-icon-cloud {
+    color: #9c27b0;
+}
+
+.module-icon-robot {
+    color: #4caf50;
+}
+
+/* 드래그 앤 드롭 스타일 */
+.tree-label[data-draggable="true"] {
+    cursor: grab;
+    user-select: none;
+    -webkit-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    transition: all 0.2s ease;
+}
+
+.tree-label[data-draggable="true"]:hover {
+    background: #f0f8ff;
+    border-color: #adb5bd;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.tree-label[data-draggable="true"]:active {
+    cursor: grabbing;
+    transform: translateY(0);
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* 드래그 중인 아이템 스타일 */
+.tree-label[data-dragging="true"] {
+    opacity: 0.5;
+    transform: rotate(5deg);
+    z-index: 1000;
+}
+
+/* 드롭 가능한 영역 스타일 */
+.tree-label[data-droppable="true"] {
+    border: 2px dashed #2196f3;
+    background: #e3f2fd;
+}
+
+.tree-label[data-droppable="true"]:hover {
+    border-color: #1976d2;
+    background: #bbdefb;
+}
+
+/* 모듈 아이템 특별 스타일 */
+.tree-label[data-type="module"] {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    margin: 1px 0;
+    /* 마진 줄임 */
+    border-radius: 4px;
+    /* 둥근 모서리 줄임 */
+    padding-left: 28px;
+    /* 드래그 핸들을 위한 여백 줄임 */
+}
+
+.tree-label[data-type="module"]:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.tree-label[data-type="module"][data-draggable="true"] {
+    cursor: grab;
+    position: relative;
+}
+
+.tree-label[data-type="module"][data-draggable="true"]:active {
+    cursor: grabbing;
+    background: #dee2e6;
+}
+
+/* 드래그 핸들 영역 */
+.drag-handle {
+    position: absolute;
+    left: 6px;
+    /* 위치 조정 */
+    top: 50%;
+    transform: translateY(-50%);
+    width: 14px;
+    /* 크기 줄임 */
+    height: 14px;
+    /* 크기 줄임 */
+    background: #6c757d;
+    border-radius: 2px;
+    cursor: grab;
+    opacity: 0.3;
+    transition: opacity 0.2s ease;
+}
+
+.drag-handle:hover {
+    opacity: 0.6;
+}
+
+.tree-label[data-type="module"]:hover .drag-handle {
+    opacity: 0.6;
+}
+
+/* 드래그 앤 드롭 시각적 피드백 */
+.drag-indicator {
+    position: absolute;
+    width: 100%;
+    height: 2px;
+    background: #007bff;
+    pointer-events: none;
+    z-index: 999;
+}
+
+.drag-indicator.top {
+    top: 0;
+}
+
+.drag-indicator.bottom {
+    bottom: 0;
+}
+
+/* 스크롤바 스타일링 */
+.registry-tree::-webkit-scrollbar {
+    width: 6px;
+}
+
+.registry-tree::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 3px;
+}
+
+.registry-tree::-webkit-scrollbar-thumb {
+    background: #c1c1c1;
+    border-radius: 3px;
+}
+
+.registry-tree::-webkit-scrollbar-thumb:hover {
+    background: #a8a8a8;
+}
+
+/* Firefox 스크롤바 스타일링 */
+.registry-tree {
+    scrollbar-width: thin;
+    scrollbar-color: #c1c1c1 #f1f1f1;
+}
+
+/* Context Menu 스타일 */
+.context-menu {
+    position: fixed;
+    background: white;
+    border: 1px solid #dee2e6;
+    border-radius: 6px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.15);
+    z-index: 1000;
+    min-width: 140px;
+    overflow: hidden;
+}
+
+.context-menu-item {
+    padding: 10px 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    border-bottom: 1px solid #f8f9fa;
+    font-size: 14px;
+    color: #495057;
+}
+
+.context-menu-item:last-child {
+    border-bottom: none;
+}
+
+.context-menu-item:hover {
+    background: #f5f7fa;
+    color: #333;
+}
+
+.context-menu-item.delete {
+    color: #dc3545;
+}
+
+.context-menu-item.delete:hover {
+    background: #f5f7fa;
+    color: #dc3545;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .tree-children {
+        margin-left: 16px;
+        padding-left: 12px;
+    }
+
+    .tree-label {
+        padding: 8px 10px;
+        margin: 0 2px;
+    }
+
+    .refresh-button {
+        padding: 8px 16px;
+        font-size: 14px;
+    }
+
+    /* 모바일에서 스크롤바 더 얇게 */
+    .registry-tree::-webkit-scrollbar {
+        width: 4px;
+    }
+}

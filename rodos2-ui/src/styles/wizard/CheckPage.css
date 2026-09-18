@@ -1,0 +1,102 @@
+.check-page {
+    padding: 32px 40px;
+    background: #fff;
+    border-radius: 10px;
+    min-height: 500px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+}
+
+.check-page h2 {
+    margin-top: 24px;
+    font-size: 1.2rem;
+    color: #2563eb;
+    text-align: center;
+}
+
+.check-page pre {
+    background: #f7f8fa;
+    border-radius: 8px;
+    padding: 18px 20px;
+    font-size: 14px;
+    color: #222;
+    overflow-x: auto;
+    margin-bottom: 24px;
+}
+
+.xml-preview-desc {
+    margin-top: 8px;
+    margin-bottom: 18px;
+    color: #4a6fa5;
+    font-size: 1rem;
+    text-align: center;
+}
+
+.xml-preview-area {
+    background: #eaf4fb;
+    border-radius: 10px;
+    padding: 24px;
+    width: 100%;
+    max-width: 700px;
+    box-shadow: 0 2px 8px rgba(80, 120, 200, 0.06);
+    margin: 0 auto 32px auto;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+}
+
+.xml-preview-area pre {
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+    color: #234;
+    font-family: 'Fira Mono', 'Consolas', 'Menlo', monospace;
+    width: 100%;
+    overflow-x: auto;
+    line-height: 1.4;
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    max-width: 100%;
+}
+
+.xml-actions {
+    margin-bottom: 20px;
+    display: flex;
+    justify-content: center;
+}
+
+.save-xml-btn {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Noto Sans', sans-serif;
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+    min-width: 100px;
+}
+
+.save-xml-btn:hover {
+    background: #1746b0;
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.3);
+    transform: translateY(-1px);
+}
+
+.save-xml-btn:active {
+    transform: translateY(0);
+}
+
+.save-xml-btn:disabled {
+    background: #9ca3af;
+    cursor: not-allowed;
+    box-shadow: none;
+    transform: none;
+}

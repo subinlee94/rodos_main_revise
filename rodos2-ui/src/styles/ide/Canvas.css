@@ -1,0 +1,231 @@
+.hexagon-canvas-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 60px;
+    padding: 40px 0;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 8px;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
+    user-select: none;
+    position: relative;
+    cursor: default;
+}
+
+.hexagon-group {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.hexagon-label {
+    margin-bottom: 12px;
+    font-size: 18px;
+    font-weight: 800;
+    color: #000000;
+    text-align: center;
+    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
+}
+
+.hexagon-canvas {
+    position: relative;
+    width: 240px;
+    height: 240px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.circle-group {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+}
+
+.circle-pos.top {
+    position: absolute;
+    top: 80px;
+    left: 50%;
+    transform: translateX(-50%);
+}
+
+.circle-pos.left {
+    position: absolute;
+    bottom: 90px;
+    left: 80px;
+}
+
+.circle-pos.right {
+    position: absolute;
+    bottom: 90px;
+    right: 80px;
+}
+
+/* 드래그 중인 모듈 스타일 */
+.hexagon-canvas-container.dragging {
+    cursor: grabbing;
+}
+
+.hexagon-canvas-container.dragging * {
+    pointer-events: none;
+}
+
+/* 호버 효과 */
+.hexagon-canvas-container .hexagon-group:hover {
+    transform: scale(1.02);
+    transition: transform 0.2s ease;
+}
+
+/* 텍스트 가독성 개선 */
+.hexagon-canvas-container .hexagon-label,
+.hexagon-canvas-container .circle-label {
+    text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.9);
+    font-weight: 600;
+}
+
+/* HW 모듈 컨테이너 */
+.hw-module-container {
+    position: absolute;
+    z-index: 2;
+    cursor: grab;
+}
+
+.hw-module-container.dragging {
+    z-index: 10;
+}
+
+.hw-module-container:active {
+    cursor: grabbing;
+}
+
+/* HW 모듈 내부 */
+.hw-module-inner {
+    position: relative;
+    width: 240px;
+    height: 240px;
+}
+
+/* HW 모듈 라벨 */
+.hw-module-label {
+    position: absolute;
+    top: -25px;
+    left: 0;
+    width: 100%;
+    text-align: center;
+    color: #000000;
+    font-weight: 800;
+    font-size: 18px;
+    text-shadow: 1px 1px 3px rgba(255, 255, 255, 0.9);
+    z-index: 3;
+}
+
+/* SW 모듈 컨테이너 */
+.sw-module-container {
+    position: absolute;
+    z-index: 4;
+    cursor: grab;
+}
+
+.sw-module-container:active {
+    cursor: grabbing;
+}
+
+/* SW 모듈 라벨 */
+.sw-module-label {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    text-align: center;
+    font-size: 12px;
+    font-weight: 600;
+    color: #333;
+    line-height: 1.2;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    pointer-events: none;
+}
+
+/* 드래그 오버 상태 */
+.hw-module-container.drag-over .hexagon {
+    opacity: 0.8;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 768px) {
+    .hw-module-inner {
+        width: 200px;
+        height: 200px;
+    }
+
+    .hw-module-label {
+        font-size: 16px;
+        top: -20px;
+    }
+
+    .sw-module-label {
+        font-size: 11px;
+    }
+}
+
+/* 모듈 타입별 색상 변수 */
+:root {
+    --color-edge: #4CAF50;
+    /* 연두색 */
+    --color-cloud: #2196F3;
+    /* 하늘색 */
+    --color-controller: #9E9E9E;
+    /* 회색 (Robot Controller) */
+    --color-ai: #2196F3;
+    /* 파란색 (AI Modules) */
+    --color-software: #2196F3;
+    /* 파란색 (Software Modules) */
+    --color-default: #666;
+    /* 기본 회색 */
+    --color-drag-over: #888;
+    /* 드래그 오버 회색 */
+}
+
+/* 모듈 타입별 기본 색상 */
+.hw-module-container[data-module-type="edge"] .hexagon {
+    background-color: var(--color-edge) !important;
+}
+
+.hw-module-container[data-module-type="cloud"] .hexagon {
+    background-color: var(--color-cloud) !important;
+}
+
+.hw-module-container[data-module-type="controller"] .hexagon {
+    background-color: var(--color-controller) !important;
+}
+
+/* 기본 색상 (모듈 타입이 없거나 다른 경우) */
+.hw-module-container:not([data-module-type]) .hexagon,
+.hw-module-container[data-module-type]:not([data-module-type="edge"]):not([data-module-type="cloud"]):not([data-module-type="controller"]) .hexagon {
+    background-color: var(--color-default) !important;
+}
+
+/* 드래그 오버 상태 */
+.hw-module-container.drag-over .hexagon {
+    background-color: var(--color-drag-over) !important;
+}
+
+/* SW 모듈 타입별 색상 */
+.sw-module-container[data-module-type="ai"] .circle {
+    background-color: var(--color-ai) !important;
+}
+
+.sw-module-container[data-module-type="software"] .circle {
+    background-color: var(--color-software) !important;
+}
+
+/* 기본 색상 (모듈 타입이 없거나 다른 경우) */
+.sw-module-container:not([data-module-type]) .circle,
+.sw-module-container[data-module-type]:not([data-module-type="ai"]):not([data-module-type="software"]) .circle {
+    background-color: var(--color-ai);
+}

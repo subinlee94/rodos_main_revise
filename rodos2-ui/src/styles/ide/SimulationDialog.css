@@ -1,0 +1,362 @@
+/* SimulationDialog 스타일 - Wizard 페이지들과 통일 */
+.simulation-dialog .MuiDialog-paper {
+    min-width: 750px;
+    max-width: 900px;
+    width: 75%;
+    margin: 16px;
+    border-radius: 12px;
+    overflow: hidden;
+}
+
+.dialog-title {
+    background: #fff;
+    color: #222;
+    padding: 16px 20px 8px 20px;
+    font-size: 16px;
+    font-weight: 700;
+    margin: 0;
+    border-bottom: 1px solid #e0e0e0;
+}
+
+.dialog-content {
+    padding: 0;
+    background: #fff;
+}
+
+/* Simulation Page 전체 레이아웃 */
+.simulation-page {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Noto Sans', sans-serif;
+    background-color: #fff;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none;
+    margin: 0;
+    min-height: auto;
+}
+
+/* Simulation Section */
+.simulation-section {
+    padding: 20px 24px;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fff;
+}
+
+.simulation-section:last-of-type {
+    border-bottom: none;
+}
+
+/* Simulation HW Section */
+.simulation-hw-section {
+    width: 100%;
+}
+
+.simulation-hw-input {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+}
+
+.simulation-hw-list {
+    width: 100%;
+}
+
+.simulation-label {
+    display: block;
+    font-size: 14px;
+    font-weight: 600;
+    color: #333;
+    margin-bottom: 8px;
+}
+
+.simulation-input {
+    width: 100%;
+    padding: 8px 10px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    font-size: 14px;
+    background: #fff;
+    transition: border 0.2s, background 0.2s;
+    box-sizing: border-box;
+}
+
+.simulation-input:focus {
+    border: 1.5px solid #2563eb;
+    outline: none;
+    background: #fff;
+}
+
+.simulation-input:disabled {
+    background: #f5f5f5;
+    color: #999;
+}
+
+/* Simulation Table */
+.simulation-table-container {
+    border: 1px solid #e1e5e9;
+    border-radius: 6px;
+    overflow: hidden;
+    background: #fff;
+    margin-top: 8px;
+}
+
+.simulation-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 14px;
+}
+
+.simulation-table th {
+    background: #f8f9fa;
+    padding: 10px 12px;
+    text-align: left;
+    font-weight: 600;
+    color: #333;
+    border-bottom: 1px solid #e1e5e9;
+}
+
+.simulation-table td {
+    padding: 10px 12px;
+    border-bottom: 1px solid #f0f0f0;
+    color: #333;
+}
+
+.simulation-table tbody tr {
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.simulation-table tbody tr:hover {
+    background: #f8f9fa;
+}
+
+.simulation-table tbody tr.selected {
+    background: #e3f2fd;
+    border-left: 3px solid #2563eb;
+}
+
+.simulation-table tbody tr:last-child td {
+    border-bottom: none;
+}
+
+/* Simulation Content Flex - 좌우 배치 */
+.simulation-content-flex {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    align-items: stretch;
+    width: 100%;
+    padding: 0;
+    background: transparent;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+/* Simulation Module Area - 좌측 */
+.simulation-module-area {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    flex: 1 1 0;
+    border: 1px solid #e1e5e9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    min-width: 400px;
+}
+
+.simulation-section-title {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #2563eb;
+}
+
+/* Simulation Config Area - 우측 */
+.simulation-config-area {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    flex: 1 1 0;
+    border: 1px solid #e1e5e9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+    min-width: 300px;
+    max-width: 350px;
+}
+
+.simulation-config-form {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.simulation-config-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.simulation-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 8px;
+}
+
+.simulation-group label {
+    font-size: 13px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.simulation-group input {
+    padding: 6px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.simulation-group input:focus {
+    border: 1.5px solid #2563eb;
+    outline: none;
+}
+
+.simulation-subtitle {
+    color: #222;
+    margin-bottom: 8px;
+    font-weight: 600;
+    font-size: 13px;
+    border-bottom: 1px solid #e0e0e0;
+    padding-bottom: 4px;
+}
+
+.simulation-pose-row {
+    display: flex;
+    gap: 8px;
+    align-items: flex-end;
+}
+
+.simulation-pose-group {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+}
+
+.simulation-pose-group label {
+    font-size: 12px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    color: #333;
+}
+
+.simulation-pose-group input {
+    padding: 6px 8px;
+    border: 1px solid #d0d7de;
+    border-radius: 4px;
+    font-size: 13px;
+    background: #fff;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.simulation-pose-group input:focus {
+    border: 1.5px solid #2563eb;
+    outline: none;
+}
+
+/* Simulation Actions */
+.simulation-actions {
+    display: flex;
+    justify-content: flex-end;
+    margin-top: 16px;
+}
+
+.simulation-btn {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 8px 16px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+    min-width: 70px;
+}
+
+.simulation-btn:hover {
+    background: #1746b0;
+}
+
+/* 하단 영역 (comp-bottom) */
+.dialog-actions {
+    padding: 12px 20px 16px 20px;
+    background-color: #fff;
+    border-top: 1px solid #e0e0e0;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.dialog-actions .MuiButton-containedPrimary {
+    background-color: #1976d2;
+    color: #ffffff;
+}
+
+.dialog-actions .MuiButton-containedPrimary:hover {
+    background-color: #1565c0;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 900px) {
+    .simulation-dialog .MuiDialog-paper {
+        width: 90%;
+        min-width: 700px;
+        margin: 16px;
+    }
+
+    .simulation-content-flex {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .simulation-module-area,
+    .simulation-config-area {
+        flex: none;
+        height: auto;
+        min-height: 300px;
+        min-width: 0;
+        max-width: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .simulation-dialog .MuiDialog-paper {
+        width: 95%;
+        min-width: 600px;
+        margin: 8px;
+    }
+
+    .simulation-section {
+        padding: 16px 20px;
+    }
+
+    .simulation-module-area,
+    .simulation-config-area {
+        padding: 16px;
+    }
+}

@@ -1,0 +1,89 @@
+<Module type="SIM">
+  <moduleName>moter_driver_module</moduleName>
+  <manufacturer>https://iic.kangwon.ac.kr</manufacturer>
+  <description>This module is used for motor driver control. It receives /cmd_vel as input, and the robot moves according to that data.</description>
+  <examples>This module controls the robot by receiving /cmd_vel as input. For example, it must be utilized for commands such as "Move the robot forward" or "Move the robot backward."However, this module cannot fulfill commands like "Move the robot to a specific location." It is used solely for moving the robot at a certain velocity</examples>
+  <idnType type="Bas">
+    <moduleID>
+      <mID>7f1f9077d09859e39debf77996ca561200A3A23C0000000000000000984000</mID>
+      <iID>00</iID>
+    </moduleID>
+    <informationModelVersion>1.0</informationModelVersion>
+  </idnType>
+  <properties>
+    <osType type="Ubuntu" bit="BIT64" version="22.04"/>  
+    <compiler>
+      <osName>Ubuntu</osName>
+      <verRangeOS min="22.04" max="22.04"/>
+      <compilerName>CPython</compilerName>
+      <verRangeCompiler min="3.8.0" max="Higher"/>
+      <bitnCPUarch>64,X86_64</bitnCPUarch>
+    </compiler>
+    <exeType>
+      <Item>
+        <opType>EVENTDRIVEN</opType>
+        <priority>1</priority>
+        <hardRT>False</hardRT>
+        <timeConstraint>0</timeConstraint>
+        <instanceType>Singleton</instanceType>
+      </Item>
+    </exeType>
+    <Libraries/>
+    <organization>
+      <owner>
+        <moduleID>
+          <mID>3436bec64aff597a85dbbfdad0ce251658ffbbaaffabfaff1e0f4000401000</mID>
+          <iID>00</iID>
+        </moduleID>
+      </owner>
+      <dependency>OWNED</dependency>
+    </organization>
+  </properties>
+  <ioVariables>
+    <Inputs>
+      <Input name="/cmd_vel" type="geometry_msgs/Twist" mandatory="true">
+        <Description>Enter the target line speed and angular speed of the robot.</Description>
+        <Input name="x" type="float32"/>
+        <Input name="y" type="float32"/>
+        <Input name="z" type="float32"/>
+      </Input>
+    </Inputs>
+  </ioVariables>
+  <services/>
+  <infra>
+    <middleware>
+      <name>ROS2</name>
+      <version min="humble" max="humble"/>
+    </middleware>
+    <comms>
+      <mostTopProtocol>
+        <name>Fast-DDS</name>
+        <version min="2.6.7" max="2.6.7"/>
+      </mostTopProtocol>
+      <underlyingProtocol>
+        <connectionType>IEEE 802.11ac</connectionType>
+        <typePhyMac>Ethernet</typePhyMac>
+        <typeNetTrans>UDP</typeNetTrans>
+        <speed>100000</speed>
+      </underlyingProtocol>
+    </comms>
+  </infra>
+  <safeSecure>
+      <Safety>
+    <overall mode="PL">d</overall> 
+  </Safety>
+  <Security>
+    <CyberSecurity>
+      <OverallCybSecurityLevel>1</OverallCybSecurityLevel>
+      <inCybSecurityLevel type="HU_IA" value="2"/>
+    </CyberSecurity>
+  </Security>
+</safeSecure>
+  <modelling/>
+  <execForm>
+		<exeForm>
+			<exeFileURL>rhksgnl00/iic/stella_motor_drive_setup:latest</exeFileURL>
+			<shellCmd>docker run -it --rm --network=host --privileged rhksgnl00/iic/stella_motor_drive_setup:latest</shellCmd>
+		</exeForm>
+  </execForm>
+</Module>

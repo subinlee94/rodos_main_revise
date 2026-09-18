@@ -1,0 +1,91 @@
+/* WizardDialog 공통 스타일 */
+
+.wizard-dialog-container {
+    display: flex;
+    min-height: 500px;
+    background: #fff;
+}
+
+.wizard-stepper {
+    width: 180px;
+    padding: 40px 10px;
+    border-right: 1px solid #e0e0e0;
+    flex-shrink: 0;
+    background: #fff;
+    overflow: visible;
+}
+
+.wizard-step {
+    display: flex;
+    align-items: center;
+    margin-bottom: 28px;
+    cursor: pointer;
+    padding: 4px 0;
+    user-select: none;
+    transition: background 0.2s;
+    color: #ABB7C2;
+    font-weight: 500;
+}
+
+.wizard-step.completed .wizard-step-number,
+.wizard-step.completed .wizard-step-label {
+    color: #222;
+    font-weight: bold;
+}
+
+.wizard-step.completed .wizard-step-number .step-complete-icon {
+    color: #1976d2;
+    font-size: 18px;
+    font-weight: bold;
+}
+
+.wizard-step.active .wizard-step-number,
+.wizard-step.active .wizard-step-label {
+    color: #1976d2;
+    font-weight: bold;
+}
+
+.wizard-step-number {
+    font-size: 14px;
+    font-weight: 500;
+    margin-right: 16px;
+    width: 20px;
+    text-align: right;
+}
+
+.wizard-step-label {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.wizard-step.active {
+    border-left: 3px solid #495AFF;
+    padding-left: 17px;
+    margin-left: -20px;
+    background: #F5F7FF;
+}
+
+.wizard-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    background: #fff;
+    overflow-y: auto;
+    max-height: 600px;
+    min-height: 400px;
+}
+
+.wizard-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding: 16px 32px 24px 32px;
+    background: #fff;
+}
+
+.wizard-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin: 0 0 16px 0;
+    color: #222;
+}

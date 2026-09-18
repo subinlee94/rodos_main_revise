@@ -1,0 +1,15 @@
+{
+    "version": 2,
+    "builds": [
+        {
+            "src": "rodos2-server/build/libs/rodos2-server-0.0.1-SNAPSHOT.jar",
+            "use": "@vercel/java"
+        }
+    ],
+    "routes": [
+        {
+            "src": "/(.*)",
+            "dest": "rodos2-server/build/libs/rodos2-server-0.0.1-SNAPSHOT.jar"
+        }
+    ]
+}

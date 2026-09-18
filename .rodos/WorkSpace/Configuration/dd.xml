@@ -1,0 +1,15 @@
+<kr.ac.kangwon.rodos.model.SharedUserState>
+  <editors>
+    <System>
+      <Robot name="rosmaster" ref="65118fd35dc450d98dab1500b5b49a1f-4000ff00-00000001-0-401000-0" targetName="rosmaster" type="robot" target="192.168.127.167">
+        <Module name="rosmaster_setup" ref="65118fd35dc450d98dab1500b5b49a1f-0000000-00000000-0-c5000-0"/>
+      </Robot>
+      <Links/>
+      <Styles>
+        <Style target="rosmaster.rosmaster_setup" px="136.0" py="139.0" width="76.0" height="76.0"/>
+        <Style target="rosmaster" px="516.0" py="231.0" width="338.0" height="383.0"/>
+      </Styles>
+    </System>
+  </editors>
+  <lastFile>.rodos/cache/App Configuration(xml)/test.xml</lastFile>
+</kr.ac.kangwon.rodos.model.SharedUserState>

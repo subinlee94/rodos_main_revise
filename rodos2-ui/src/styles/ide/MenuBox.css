@@ -1,0 +1,389 @@
+/* MenuBox 스타일 - 기존 툴바 스타일 유지 */
+.menu-box {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 8px 16px;
+    background: #f8f9fa;
+    border-bottom: 1px solid #e9ecef;
+    align-items: center;
+    flex-wrap: wrap;
+}
+
+.menu-box-row {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+
+/* 구분선 스타일 */
+.menu-divider {
+    width: 1px;
+    height: 24px;
+    background: #dee2e6;
+    margin: 0 4px;
+}
+
+.menu-button {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    min-width: 80px;
+    justify-content: center;
+}
+
+/* 기존 호버 스타일은 아래에서 재정의 */
+
+.menu-button:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+.menu-button:disabled:hover {
+    background: #ffffff;
+    border-color: #dee2e6;
+    transform: none;
+}
+
+/* 버튼 타입별 스타일 - New만 파란색, 나머지는 흰색 */
+.menu-button--primary {
+    background: #007bff;
+    color: #ffffff;
+    border-color: #007bff;
+}
+
+.menu-button--primary:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+/* 나머지 버튼들은 모두 흰색 배경 유지 */
+.menu-button--success,
+.menu-button--warning,
+.menu-button--danger,
+.menu-button--info {
+    background: #ffffff;
+    color: #495057;
+    border-color: #dee2e6;
+}
+
+.menu-button--success:hover,
+.menu-button--warning:hover,
+.menu-button--danger:hover,
+.menu-button--info:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+/* 로딩 상태 */
+.menu-button--loading {
+    position: relative;
+    color: transparent;
+}
+
+.menu-button--loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    top: 50%;
+    left: 50%;
+    margin-left: -8px;
+    margin-top: -8px;
+    border: 2px solid #ffffff;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* 아이콘 스타일 */
+.menu-button-icon {
+    font-size: 16px;
+    line-height: 1;
+}
+
+.menu-button-text {
+    font-size: 14px;
+    font-weight: 500;
+}
+
+/* 반응형 디자인 */
+@media (max-width: 1200px) {
+    .menu-box {
+        flex-wrap: wrap;
+        gap: 6px;
+    }
+
+    .menu-button {
+        padding: 6px 12px;
+        font-size: 13px;
+        min-width: 70px;
+    }
+}
+
+@media (max-width: 768px) {
+    .menu-box {
+        padding: 8px 12px;
+        gap: 4px;
+    }
+
+    .menu-button {
+        padding: 6px 8px;
+        font-size: 12px;
+        min-width: 60px;
+    }
+
+    .menu-button-text {
+        display: none;
+    }
+
+    .menu-button-icon {
+        font-size: 16px;
+    }
+
+    .menu-divider {
+        display: none;
+    }
+}
+
+/* 다이얼로그 스타일 */
+.menu-dialog {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.menu-dialog-content {
+    background: #ffffff;
+    border-radius: 8px;
+    padding: 24px;
+    max-width: 500px;
+    width: 90%;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+    animation: dialogFadeIn 0.3s ease;
+}
+
+@keyframes dialogFadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9) translateY(-20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.menu-dialog-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 16px;
+}
+
+.menu-dialog-icon {
+    font-size: 24px;
+    line-height: 1;
+}
+
+.menu-dialog-title {
+    font-size: 18px;
+    font-weight: 600;
+    color: #212529;
+    margin: 0;
+}
+
+.menu-dialog-message {
+    font-size: 14px;
+    color: #6c757d;
+    line-height: 1.5;
+    margin: 0 0 20px 0;
+    white-space: pre-line;
+}
+
+.menu-dialog-actions {
+    display: flex;
+    gap: 8px;
+    justify-content: flex-end;
+}
+
+.menu-dialog-button {
+    padding: 8px 16px;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    background: #ffffff;
+    color: #495057;
+    font-size: 14px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.menu-dialog-button:hover {
+    background: #e9ecef;
+    border-color: #adb5bd;
+}
+
+.menu-dialog-button--primary {
+    background: #007bff;
+    color: #ffffff;
+    border-color: #007bff;
+}
+
+.menu-dialog-button--primary:hover {
+    background: #0056b3;
+    border-color: #0056b3;
+}
+
+/* 툴팁 스타일 제거 - 기본 title 속성만 사용 */
+
+/* 접근성 개선 - 가벼운 포커스 스타일 */
+.menu-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+.menu-dialog-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px rgba(0, 123, 255, 0.25);
+}
+
+/* 탭 스타일 개선 - 가볍고 깔끔한 반응 */
+.menu-button:hover {
+    background: #f8f9fa;
+    border-color: #adb5bd;
+    transform: none;
+    box-shadow: none;
+}
+
+.menu-button:active {
+    background: #e9ecef;
+    transform: none;
+    box-shadow: none;
+}
+
+/* 선택된 상태 스타일 (필요시 사용) */
+.menu-button--active {
+    background: #e3f2fd;
+    color: #1976d2;
+    border-color: #1976d2;
+}
+
+.menu-button--active:hover {
+    background: #bbdefb;
+    border-color: #1976d2;
+}
+
+/* 상태 표시기 스타일 */
+.unsaved-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #fff3cd;
+    border: 1px solid #ffeaa7;
+    border-radius: 4px;
+    color: #856404;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #d1ecf1;
+    border: 1px solid #bee5eb;
+    border-radius: 4px;
+    color: #0c5460;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.spinner {
+    width: 16px;
+    height: 16px;
+    border: 2px solid #0c5460;
+    border-radius: 50%;
+    border-top-color: transparent;
+    animation: spin 1s linear infinite;
+}
+
+/* 다크 모드 지원 */
+@media (prefers-color-scheme: dark) {
+    .menu-box {
+        background: #2d3748;
+        border-color: #4a5568;
+        color: #e2e8f0;
+    }
+
+    .menu-button {
+        background: #4a5568;
+        color: #e2e8f0;
+        border-color: #718096;
+    }
+
+    .menu-button:hover {
+        background: #4a5568;
+        border-color: #718096;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .menu-button:active {
+        background: #2d3748;
+        transform: none;
+        box-shadow: none;
+    }
+
+    .menu-dialog-content {
+        background: #2d3748;
+        color: #e2e8f0;
+    }
+
+    .menu-dialog-title {
+        color: #e2e8f0;
+    }
+
+    .menu-dialog-message {
+        color: #a0aec0;
+    }
+
+    .unsaved-indicator {
+        background: #664d03;
+        border-color: #ffc107;
+        color: #fff3cd;
+    }
+
+    .loading-indicator {
+        background: #055160;
+        border-color: #0dcaf0;
+        color: #d1ecf1;
+    }
+}

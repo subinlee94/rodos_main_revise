@@ -1,0 +1,123 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module type ="SIM">
+    <moduleName>pick_and_place_module</moduleName> <!-- see C.2 in ISO 22166-201 -->
+    <description>a module that provides services for holding up objects or placing them in certain locations</description>
+    <manufacturer>iic</manufacturer>
+    <examples></examples>
+    <idnType type="Bas">
+      <moduleID> <!-- SIM : PickAndPlace Module-->
+        <mID>e4f9970fef8f56d397451d3891318b490023AD5300000000000000008C5000</mID>
+        <iID>00</iID>
+			<informationModelVersion>1.0</informationModelVersion>
+		  </moduleID>
+	</idnType>
+    <properties>
+		<Property name="maximum_reachable_distance" type="uint32" unit="m" description="radius reachable by the end effector">
+			<value>0.28</value>
+			<immutable>false</immutable>
+		</Property>
+		<exeType>
+			<Item>
+				<opType>EventDriven</opType>
+				<priority>1</priority>
+				<hardRT>false</hardRT>
+				<timeConstraint> 10000 </timeConstraint>    <!-- unit: micro seconds -->
+				<instanceType> Singleton </instanceType>
+			</Item>
+		</exeType>
+		<compilerType>
+			<osName>Ubuntu</osName>
+			<verRangeOS min="22.04" max="22.04" />
+			<compilerName>GCC</compilerName>
+			<verRangeCompiler min="14.0" max="Higher" />
+			<bitnCPUarch bit="32" CPUarch="armv7hf"/>
+		</compilerType>
+    <organization>
+      <owner>
+        <moduleID> <!-- mycobot320pi 로봇 팔 컨트롤러 RaspberryPi 4B-->
+          <mID>2334aed66fff597a85dbbfdad0ce2516-58ffbbaaffabfaff1e0f4000401000</mID>
+          <iID>00</iID>
+        </moduleID>
+      </owner>
+      <dependency>OWNED</dependency>
+    </organization>
+		<Libraries>
+			<Item name="pymycobot" version="3.1.2" />
+		</Libraries>
+	</properties>
+    <ioVariables>
+		<Inputs>
+      <Input name="tf" type="tf2_msgs.msg.TFMessage" description = "urdf-based coordinate system topic"/> 
+		</Inputs>
+	</ioVariables>
+	<services>
+    <ServiceXML>
+    <ID>00</ID>
+			<methodList>
+				<Method methodName="request_pickup" description = "A service request to the robot arm to pick up an object that exists in a specific pose. The pose in the input is the pose of the target object.">
+					<argType type="geometry_msgs.msg.Pose" valueName="position" inout="IN"/>
+					<retType>bool</retType>
+					<moType>MANDATORY</moType>
+					<reqProvType>PROVIDED</reqProvType>
+          <moduleID> <!-- SIM : PickAndPlace Module-->
+            <mID>53f960047e4a5fbfacb242a920d349b600A2FC15D135C1890000000012301000</mID>
+            <iID>00</iID>
+          </moduleID>
+				</Method>
+			</methodList>
+			<methodList>
+				<Method methodName="request_put" description = "A robot arm puts an object down in a certain position">
+					<argType type="geometry_msgs.msg.Pose" valueName="position" inout="IN"/>
+					<retType>bool</retType>
+					<moType>MANDATORY</moType>
+					<reqProvType>PROVIDED</reqProvType>
+          <moduleID> <!-- SIM : PickAndPlace Module-->
+            <mID>53f960047e4a5fbfacb242a920d349b600A2FC15D135C1890000000012301000</mID>
+            <iID>00</iID>
+          </moduleID>
+				</Method>
+			</methodList>
+			<methodList>
+				<Method methodName="pick_and_place" description = "A robotic arm grabs an object and puts it down">
+					<argType type="geometry_msgs.msg.Pose" valueName="target_position" inout="IN"/>
+					<argType type="geometry_msgs.msg.Pose" valueName="goal_position" inout="IN"/>
+					<retType>bool</retType>
+					<moType>MANDATORY</moType>
+					<reqProvType>PROVIDED</reqProvType>
+          <moduleID> <!-- SIM : PickAndPlace Module-->
+            <mID>53f960047e4a5fbfacb242a920d349b600A2FC15D135C1890000000012301000</mID>
+            <iID>00</iID>
+          </moduleID>
+				</Method>
+			</methodList>
+    <pvType>Physical</pvType>
+    <moType>MANDATORY</moType>
+  </ServiceXML>
+  </services>
+	<infra>
+		<middleware>
+			<name>ROS2</name>
+			<version min="humble" max="humble"/>
+		</middleware>
+		<comms>
+			<mostTopProtocol>
+				<name>Fast-DDS</name>
+				<version min="2.6.7" max="2.6.7"/>
+			</mostTopProtocol>
+			<underlyingProtocol>
+				<connectionType>IEEE 802.11ac</connectionType>
+				<typePhyMac>Ethernet</typePhyMac>
+				<typeNetTrans>UDP</typeNetTrans>
+				<speed>100000</speed>
+			</underlyingProtocol>
+		</comms>
+	</infra>
+	<safeSecure/>
+	<modelling/>
+	<execForm>
+		<exeForm>
+			<exeFileURL>rhksgnl00/iic/pick_and_place:latest</exeFileURL>
+			<shellCmd>docker run -it -d --rm --network=host --privileged -v /dev:/dev rhksgnl00/iic/pick_and_place:latest</shellCmd>
+		</exeForm>
+	</execForm>
+</Module>

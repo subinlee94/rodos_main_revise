@@ -1,0 +1,200 @@
+/* Progress Bar Styles */
+.progress-container {
+    width: 100%;
+    margin: 8px 0;
+}
+
+.progress-label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 4px;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+.progress-module-name {
+    color: #333;
+    flex: 1;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.progress-percentage {
+    color: #666;
+    font-weight: 600;
+    margin-left: 8px;
+}
+
+.progress-bar {
+    width: 100%;
+    height: 8px;
+    background-color: #e0e0e0;
+    border-radius: 4px;
+    overflow: hidden;
+    position: relative;
+}
+
+.progress-fill {
+    height: 100%;
+    border-radius: 4px;
+    transition: width 0.3s ease-in-out;
+    position: relative;
+}
+
+/* Status-specific styles */
+.progress-idle .progress-fill {
+    background-color: #9e9e9e;
+    width: 0%;
+}
+
+.progress-running .progress-fill {
+    background: linear-gradient(90deg, #2196f3, #64b5f6);
+    animation: progress-pulse 1.5s ease-in-out infinite;
+}
+
+.progress-success .progress-fill {
+    background-color: #4caf50;
+    width: 100%;
+}
+
+.progress-error .progress-fill {
+    background-color: #f44336;
+}
+
+.progress-warning .progress-fill {
+    background-color: #ff9800;
+}
+
+/* Size variants */
+.progress-small {
+    margin: 4px 0;
+}
+
+.progress-small .progress-bar {
+    height: 6px;
+}
+
+.progress-small .progress-label {
+    font-size: 11px;
+    margin-bottom: 2px;
+}
+
+.progress-medium .progress-bar {
+    height: 8px;
+}
+
+.progress-large .progress-bar {
+    height: 12px;
+}
+
+.progress-large .progress-label {
+    font-size: 14px;
+    margin-bottom: 6px;
+}
+
+/* Animations */
+@keyframes progress-pulse {
+    0% {
+        opacity: 1;
+    }
+
+    50% {
+        opacity: 0.7;
+    }
+
+    100% {
+        opacity: 1;
+    }
+}
+
+.progress-running.animated .progress-fill {
+    animation: progress-pulse 1.5s ease-in-out infinite;
+}
+
+/* Error message */
+.progress-error-message {
+    font-size: 11px;
+    color: #f44336;
+    margin-top: 2px;
+    font-style: italic;
+}
+
+/* Clickable error bar */
+.progress-bar.clickable {
+    cursor: pointer;
+    transition: opacity 0.2s ease;
+}
+
+.progress-bar.clickable:hover {
+    opacity: 0.8;
+}
+
+/* Module-specific progress container */
+.module-progress-container {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    border-radius: 6px;
+    padding: 8px;
+    margin: 4px 0;
+}
+
+.module-progress-container .progress-label {
+    font-weight: 600;
+    color: #495057;
+}
+
+/* Overall progress container */
+.overall-progress-container {
+    background: #ffffff;
+    border: 2px solid #007bff;
+    border-radius: 8px;
+    padding: 16px;
+    margin: 16px 0;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.overall-progress-container .progress-label {
+    font-size: 16px;
+    font-weight: 700;
+    color: #007bff;
+    margin-bottom: 8px;
+}
+
+.overall-progress-container .progress-bar {
+    height: 16px;
+    background-color: #e3f2fd;
+}
+
+.overall-progress-container .progress-fill {
+    background: linear-gradient(90deg, #007bff, #42a5f5);
+}
+
+/* Success state */
+.overall-progress-container.progress-success {
+    border-color: #4caf50;
+    background-color: #f1f8e9;
+}
+
+.overall-progress-container.progress-success .progress-label {
+    color: #4caf50;
+}
+
+.overall-progress-container.progress-success .progress-fill {
+    background: #4caf50;
+}
+
+/* Error state */
+.overall-progress-container.progress-error {
+    border-color: #f44336;
+    background-color: #ffebee;
+}
+
+.overall-progress-container.progress-error .progress-label {
+    color: #f44336;
+}
+
+.overall-progress-container.progress-error .progress-fill {
+    background: #f44336;
+}

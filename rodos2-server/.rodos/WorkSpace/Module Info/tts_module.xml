@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module type ="SIM">
+  <moduleName>TTS_module</moduleName>
+  <description>Module that receives tact and outputs audio</description>
+  <manufacturer>IIC</manufacturer>
+  <examples></examples>
+  <idnType type="Bas">
+      <moduleID> <!-- SIM : tts Module -->
+        <mID>dbe71c4165fd5165a45cb2dc0198882c0023AD530000000000000000881000</mID>
+        <iID>00</iID>
+      </moduleID>
+		<informationModelVersion>1.0</informationModelVersion>
+	</idnType>
+    <properties>
+		<osType type="Ubuntu" bit="BIT64" version="22.04"/>
+		<exeType>
+			<Item>
+				<opType>EventDriven</opType>
+				<priority>1</priority>
+				<hardRT>false</hardRT>
+				<timeConstraint> 10000 </timeConstraint>    <!-- unit: micro seconds -->
+				<instanceType> Singleton </instanceType>
+			</Item>
+		</exeType>
+		<compilerType>
+			<osName>Ubuntu</osName>
+			<verRangeOS min="22.04" max="22.04" />
+			<compilerName>GCC</compilerName>
+			<verRangeCompiler min="14.0" max="Higher" />
+			<bitnCPUarch bit="32" CPUarch="armv7hf"/>
+		</compilerType>
+    <organization>
+      <owner>
+        <moduleID>
+          <mID>3436bec64aff597a85dbbfdad0ce251658ffbbaaffabfaff1e0f4000401000</mID>
+          <iID>00</iID>
+        </moduleID>
+      </owner>
+      <dependency>OWNED</dependency>
+    </organization>
+		<Libraries>
+			<Item name="google-cloud-texttospeech" version="2.34.0" />
+		</Libraries>
+	</properties>
+	<ioVariables/>
+	<services>
+    <ServiceXML>
+    <ID>00</ID>
+    <methodList>
+      <Method methodName="request_tts" description = "A service requesting test to speech">
+        <argType type="TTS_msgs.srv.TTS" valueName="Req" inout="IN">
+          <argType type="string" valueName="text" inout="IN"/>
+        </argType>
+        <argType type="TTS_msgs.srv.TTS" valueName="Res" inout="OUT">
+          <argType type="string" valueName="text" inout="OUT"/>
+        </argType>
+        <retType>bool</retType>
+        <moType>MANDATORY</moType>
+        <reqProvType>PROVIDED</reqProvType>
+        <moduleID> <!-- SIM : tts_module 자기 자신 -->
+          <mID>026ee9135e0258d282cdfd9c270005cd80af03fd0000000a2000</mID>
+          <iID>00</iID>
+        </moduleID>
+      </Method>
+    </methodList>
+    <pvType>Physical</pvType>
+    <moType>MANDATORY</moType>
+  </ServiceXML>
+  </services>
+	<infra>
+		<middleware>
+			<name>ROS2</name>
+			<version min="humble" max="humble"/>
+		</middleware>
+		<comms>
+			<mostTopProtocol>
+				<name>Fast-DDS</name>
+				<version min="2.6.7" max="2.6.7"/>
+			</mostTopProtocol>
+			<underlyingProtocol>
+				<connectionType>IEEE 802.11ac</connectionType>
+				<typePhyMac>Ethernet</typePhyMac>
+				<typeNetTrans>UDP</typeNetTrans>
+				<speed>100000</speed>
+			</underlyingProtocol>
+		</comms>
+	</infra>
+	<safeSecure/>
+	<modelling/>
+	<execForm>
+		<exeForm>
+			<exeFileURL>rhksgnl00/iic/TTS_module:latest</exeFileURL>
+			<shellCmd>docker run -it -d --rm --network=host --privileged rhksgnl00/iic/TTS_module:latest</shellCmd>
+		</exeForm>
+	</execForm>
+</Module>

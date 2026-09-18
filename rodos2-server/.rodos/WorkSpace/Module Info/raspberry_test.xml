@@ -1,0 +1,112 @@
+<Module type="Composite">
+  <moduleName>raspberry_test</moduleName>
+  <manufactures>iic</manufactures>
+  <description>desc</description>
+  <examples>exam</examples>
+  <idnType>
+    <moduleID>
+      <mID>e4f9970fef8f56d397451d3891318b49061F32014010001000000000000000</mID>
+      <iID>00</iID>
+    </moduleID>
+    <swAspects>
+      <moduleID>
+        <mID>68451959d205584aa3da384997e263120032A3C800000000000000008C5000</mID>
+        <iID>00</iID>
+      </moduleID>
+      <moduleID>
+        <mID>e4f9970fef8f56d397451d3891318b490012DF150000000000000000941000</mID>
+        <iID>00</iID>
+      </moduleID>
+      <moduleID>
+        <mID>7b23e0a81c5354debad7ede01ebcba3c00A2DF21A12F1268000000002451000</mID>
+        <iID>00</iID>
+      </moduleID>
+    </swAspects>
+    <hwAspects/>
+    <informationModelVersion>1.0</informationModelVersion>
+  </idnType>
+  <properties>
+    <Property complexType="NONE" name="threshold" type="float32" description="Inference accuracy threshold Ignore accuracy below that value">
+      <value>60</value>
+    </Property>
+    <osType/>
+    <compiler>
+      <osname></osname>
+    </compiler>
+  </properties>
+  <ioVariables>
+    <Inputs>
+      <Input name="navigate_to_pose" type="nav2_msgs.action.NavigateToPose" unit="" description="Navigation goal with target pose and behavior tree specification"/>
+      <Input name="navigate_through_poses" type="nav2_msgs.action.NavigateThroughPoses" unit="" description=""/>
+    </Inputs>
+    <Outputs>
+      <Output name="detected_objects" type="turtlebot3_applications_msgs.msg.ObjectDetectionMsg" unit="" description="YOLO object detection results are being published. An appropriate subscriber is needed to receive this topic."/>
+      <Output name="navigation_result" type="nav2_msgs.action.NavigateToPose" unit="" description="Final navigation result with success/failure status"/>
+    </Outputs>
+  </ioVariables>
+  <services>
+    <NoOfBasicService>0</NoOfBasicService>
+    <NoOfOptionalService>0</NoOfOptionalService>
+    <ServiceXML>
+      <methodList>
+        <Method methodName="navigation_to_pose" description="">
+          <argType type="nav2_msgs.srv.NavigateToPose" valueName="Req" inout="IN"/>
+          <retType>uint8</retType>
+          <reqProvType>PROVIDED</reqProvType>
+        </Method>
+      </methodList>
+      <methodList>
+        <Method methodName="navigate_through_poses" description="">
+          <argType type="nav2_msgs.srv.NavigateThroughPoses" valueName="Req" inout="IN"/>
+          <retType>uint8</retType>
+          <reqProvType>PROVIDED</reqProvType>
+        </Method>
+      </methodList>
+    </ServiceXML>
+    <ServiceXML>
+      <methodList>
+        <Method methodName="get_object_data" description="A service requesting position information for the target">
+          <argType type="yolo_msgs.srv.GetTargetObject" valueName="Req" inout="IN"/>
+          <argType type="yolo_msgs.srv.GetTargetObject" valueName="Res" inout="OUT"/>
+          <retType>uint8</retType>
+          <reqProvType>PROVIDED</reqProvType>
+          <moduleID>
+            <mID>026ee9135e0258d282cdfd9c270005cd80af03fd0000000a2000</mID>
+            <iID>00</iID>
+          </moduleID>
+        </Method>
+      </methodList>
+    </ServiceXML>
+    <ServiceXML>
+      <methodList>
+        <Method methodName="request_tts" description="A service requesting test to speech">
+          <argType type="TTS_msgs.srv.TTS" valueName="Req" inout="IN"/>
+          <argType type="TTS_msgs.srv.TTS" valueName="Res" inout="OUT"/>
+          <retType>bool</retType>
+          <reqProvType>PROVIDED</reqProvType>
+          <moduleID>
+            <mID>026ee9135e0258d282cdfd9c270005cd80af03fd0000000a2000</mID>
+            <iID>00</iID>
+          </moduleID>
+        </Method>
+      </methodList>
+    </ServiceXML>
+  </services>
+  <infra/>
+  <safeSecure>
+    <overallValidSafetyLevelType></overallValidSafetyLevelType>
+    <overallSafetyLevelPL></overallSafetyLevelPL>
+    <overallSafetyLevelSIL></overallSafetyLevelSIL>
+    <overallPhySecurityLevel></overallPhySecurityLevel>
+    <overallCybSecurityLevel></overallCybSecurityLevel>
+    <Safety/>
+    <Security/>
+  </safeSecure>
+  <modelling/>
+  <executableForm>
+    <ExeForms/>
+    <lib>
+      <urlnPaths/>
+    </lib>
+  </executableForm>
+</Module>

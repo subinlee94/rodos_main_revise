@@ -1,0 +1,158 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<Module type ="SIM">
+    <moduleName>object_detection_module</moduleName> <!-- see C.2 in ISO 22166-201 -->
+    <description>This module detects various objects including personal items based on camera images. It analyzes the visual input to detect specific targets like wallets or keys and detect their precise locations within the frame.</description>
+    <manufacturer>robotis</manufacturer>
+    <examples>This module is used in situations where object detection is required. For example, it is used to detect objects in the image. identify </examples>
+    <idnType type="Bas">
+		<moduleID>
+			<mID>e4f9970fef8f56d397451d3891318b490012DF150000000000000000941000</mID>
+			<iID>00</iID>
+			<informationModelVersion>1.0</informationModelVersion>
+		</moduleID>
+	</idnType>
+    <properties>
+		<Property name="max_det" type="uint32" description="Maximum number of bounding boxes">
+			<value>30</value>
+			<immutable>false</immutable>
+		</Property>
+		<Property name="threshold" type="float32" description="Inference accuracy threshold Ignore accuracy below that value">
+			<value>60</value>
+			<immutable>false</immutable>
+		</Property>
+		<Property name="imgsz_height" type="uint32" description="Image height to resize">
+			<value>640</value>
+			<immutable>false</immutable>
+		</Property>
+		<Property name="imgsz_width" type="uint32" description="Image width to Resize">
+			<value>480</value>
+			<immutable>false</immutable>
+		</Property>
+		<osType type="Ubuntu" bit="BIT64" version="22.04"/>
+		<exeType>
+			<Item>
+				<opType>EventDriven</opType>
+				<priority>1</priority>
+				<hardRT>false</hardRT>
+				<timeConstraint> 10000 </timeConstraint>    <!-- unit: micro seconds -->
+				<instanceType> Singleton </instanceType>
+			</Item>
+		</exeType>
+		<compilerType>
+			<osName>Ubuntu</osName>
+			<verRangeOS min="22.04" max="22.04" />
+			<compilerName>GCC</compilerName>
+			<verRangeCompiler min="14.0" max="Higher" />
+			<bitnCPUarch bit="32" CPUarch="armv7hf"/>
+		</compilerType>
+    <organization>
+      <owner>
+        <moduleID>
+          <mID>3436bec64aff597a85dbbfdad0ce251658ffbbaaffabfaff1e0f4000401000</mID>
+          <iID>00</iID>
+        </moduleID>
+      </owner>
+      <dependency>OWNED</dependency>
+    </organization>
+		<Libraries>
+			<Item name="OpenCV" version="4.5.3" />
+		</Libraries>
+	</properties>
+    <ioVariables>
+			<Inputs>
+        <Input name="tf" type="tf2_msgs.msg.TFMessage" description = "urdf-based coordinate system topic"/> 
+        <Input name="camera.color.image_raw" type="sensor_msgs.msg.Image" description = "image from camera"> 
+          <Input name="encoding" type="string"/>
+          <Input name="data" type="uint8[]"/>
+          <Input name="height" type="uint32"/>
+          <Input name="width" type="uint32"/>
+				</Input>
+        <Input name="camera.depth.image_raw" type="sensor_msgs.msg.Image" description = "depth image from camera"> 
+          <Input name="encoding" type="string"/>
+          <Input name="data" type="uint8[]"/>
+          <Input name="height" type="uint32"/>
+          <Input name="width" type="uint32"/>
+				</Input>
+      <Input name="camera.color.camera_info" type="sensor_msgs.CameraInfo">
+        <Input name="height" type="uint32"/>
+        <Input name="width" type="uint32"/>
+        <Input name="distortion_model" type="string"/>
+        <Input name="D" type="float64 []"/>
+        <Input name="K" type="float64 [9]"/>
+        <Input name="R" type="float64 [9]"/>
+        <Input name="P" type="float64 [12]"/>
+        <Input name="binning_x" type="uint32"/>
+        <Input name="binning_y" type="uint32"/>
+        <Input name="roi" type="sensor_msgs.RegionOfInterest"/>
+      </Input>
+      <Input name="camera.depth.camera_info" type="sensor_msgs.CameraInfo">
+        <Input name="height" type="uint32"/>
+        <Input name="width" type="uint32"/>
+        <Input name="distortion_model" type="string"/>
+        <Input name="D" type="float64 []"/>
+        <Input name="K" type="float64 [9]"/>
+        <Input name="R" type="float64 [9]"/>
+        <Input name="P" type="float64 [12]"/>
+        <Input name="binning_x" type="uint32"/>
+        <Input name="binning_y" type="uint32"/>
+        <Input name="roi" type="sensor_msgs.RegionOfInterest"/>
+      </Input>
+			</Inputs>
+			<Outputs>
+				<Output name="detected_objects" type="turtlebot3_applications_msgs.msg.ObjectDetectionMsg" description = "YOLO object detection results are being published. An appropriate subscriber is needed to receive this topic.">
+					<Output name="object_name" type="string" description = "class name of detected objects"/>
+					<Output name="object_position" type="float64[]" description = "bounding box center position of detected objects"/>
+				</Output>
+			</Outputs>
+	</ioVariables>
+	<services>
+    <ServiceXML>
+    <ID>00</ID>
+    <methodList>
+      <Method methodName="get_object_data" description = "A service requesting position information for the target">
+        <argType type="yolo_msgs.srv.GetTargetObject" valueName="Req" inout="IN">
+          <argType type="string" valueName="target_name" inout="IN"/>
+        </argType>
+        <argType type="yolo_msgs.srv.GetTargetObject" valueName="Res" inout="OUT">
+          <argType type="string" valueName="target_name" inout="OUT"/>
+        </argType>
+        <retType>uint8</retType>
+        <moType>MANDATORY</moType>
+        <reqProvType>PROVIDED</reqProvType>
+        <moduleID> <!-- SIM : navigationModule -->
+          <mID>026ee9135e0258d282cdfd9c270005cd80af03fd0000000a2000</mID>
+          <iID>00</iID>
+        </moduleID>
+      </Method>
+    </methodList>
+    <pvType>Virtual</pvType>
+    <moType>MANDATORY</moType>
+  </ServiceXML>
+  </services>
+	<infra>
+		<middleware>
+			<name>ROS2</name>
+			<version min="humble" max="humble"/>
+		</middleware>
+		<comms>
+			<mostTopProtocol>
+				<name>Fast-DDS</name>
+				<version min="2.6.7" max="2.6.7"/>
+			</mostTopProtocol>
+			<underlyingProtocol>
+				<connectionType>IEEE 802.11ac</connectionType>
+				<typePhyMac>Ethernet</typePhyMac>
+				<typeNetTrans>UDP</typeNetTrans>
+				<speed>100000</speed>
+			</underlyingProtocol>
+		</comms>
+	</infra>
+	<safeSecure/>
+	<modelling/>
+	<execForm>
+		<exeForm>
+			<exeFileURL>rhksgnl00/iic/object_detection:latest</exeFileURL>
+			<shellCmd>docker run -it -d --rm --network=host --privileged rhksgnl00/iic/object_detection:latest</shellCmd>
+		</exeForm>
+	</execForm>
+</Module>

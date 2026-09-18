@@ -1,0 +1,328 @@
+/* IO Variables Page */
+
+.io-page {
+    display: flex;
+    flex-direction: column;
+    font-family: 'Noto Sans', sans-serif;
+    height: 650px;
+    background-color: #fff;
+    padding: 0;
+    border-radius: 0;
+    box-shadow: none;
+    max-width: none;
+    margin: 0;
+    min-height: auto;
+}
+
+.io-flex {
+    display: flex;
+    flex-direction: row;
+    gap: 0;
+    align-items: stretch;
+    width: 100%;
+    height: 100%;
+    padding: 0;
+    background: transparent;
+    min-height: 0;
+    flex: 1;
+    overflow: hidden;
+}
+
+.io-input-area {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    flex: 1 1 0;
+    height: 100%;
+    border: 1px solid #e1e5e9;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    overflow-y: auto;
+}
+
+/* 탭 스타일 */
+.io-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 2px solid #f0f0f0;
+    margin-bottom: 24px;
+    background: #f8f9fa;
+    border-radius: 8px 8px 0 0;
+}
+
+.io-tabs button {
+    background: none;
+    border: none;
+    outline: none;
+    padding: 12px 24px 10px 24px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    color: #666;
+    cursor: pointer;
+    border-bottom: 2px solid transparent;
+    transition: all 0.2s ease;
+    border-radius: 8px 8px 0 0;
+    margin-right: 2px;
+    flex: 1;
+}
+
+.io-tabs button.active {
+    color: #2563eb;
+    font-weight: 600;
+    background: #fff;
+    border-bottom: 2px solid #2563eb;
+    box-shadow: 0 -2px 4px rgba(37, 99, 235, 0.1);
+}
+
+.io-tabs button:hover:not(.active) {
+    color: #2563eb;
+    background: #f0f2f5;
+}
+
+.io-group {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 16px;
+}
+
+.io-group label {
+    font-size: 0.9rem;
+    font-weight: 500;
+    margin-bottom: 6px;
+    color: #333;
+}
+
+.io-group input,
+.io-group select,
+.io-group textarea {
+    padding: 10px 12px;
+    border: 1px solid #d0d7de;
+    border-radius: 6px;
+    font-size: 0.9rem;
+    background: #fff;
+    transition: border 0.2s, background 0.2s, box-shadow 0.2s;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.io-group input:focus,
+.io-group select:focus,
+.io-group textarea:focus {
+    border: 1.5px solid #2563eb;
+    outline: none;
+    background: #fff;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.io-group input::placeholder,
+.io-group textarea::placeholder {
+    color: #999;
+}
+
+.io-group textarea {
+    min-height: 80px;
+    resize: vertical;
+    font-family: inherit;
+}
+
+.io-btn {
+    background: #2563eb;
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    padding: 10px 20px;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    min-width: 80px;
+}
+
+.io-btn:disabled {
+    background: #b6c3e2;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.io-btn:not(:disabled):hover {
+    background: #1746b0;
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(37, 99, 235, 0.2);
+}
+
+.io-btn:not(:disabled):active {
+    transform: translateY(0);
+    box-shadow: 0 2px 4px rgba(37, 99, 235, 0.2);
+}
+
+.io-tree-area {
+    background: #fff;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+    flex: 1 1 0;
+    height: 100%;
+    border: 1px solid #e1e5e9;
+    overflow-y: auto;
+    overflow-x: hidden;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.io-tree-area h3 {
+    margin: 0 0 16px 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #333;
+    padding-bottom: 8px;
+    border-bottom: 2px solid #2563eb;
+}
+
+.io-tree {
+    list-style: none;
+    padding-left: 0;
+    margin: 0;
+}
+
+.io-tree li {
+    margin-bottom: 3px;
+}
+
+.io-tree ul {
+    padding-left: 20px;
+    margin-top: 2px;
+}
+
+.io-tree-node {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 0.85rem;
+    color: #333;
+    background: #f8f9fa;
+    transition: all 0.15s ease;
+    margin-bottom: 1px;
+    border: 1px solid #e9ecef;
+    position: relative;
+    min-height: 18px;
+    word-break: break-word;
+    line-height: 1.3;
+}
+
+/* Root node styling - PropertiesPage와 동일 */
+.io-tree-node.root-node {
+    background: #f8f9fa;
+    border: 1px solid #e9ecef;
+    font-weight: 500;
+    color: #333;
+}
+
+.io-tree-node.root-node:hover {
+    background: #e8f4fd;
+    border-color: #2563eb;
+}
+
+.io-tree-node.root-node.selected {
+    background: #2563eb;
+    color: #fff;
+    border-color: #1d4ed8;
+}
+
+.root-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.root-hint {
+    font-size: 0.8rem;
+    font-weight: 400;
+    opacity: 0.7;
+    font-style: italic;
+}
+
+/* IO type indicators 제거 - PropertiesPage와 동일하게 */
+
+/* Node selection states - PropertiesPage와 동일 */
+.io-tree-node:hover:not(.root-node) {
+    background: #e8f4fd;
+    border-color: #2563eb;
+}
+
+.io-tree-node.selected:not(.root-node) {
+    background: #2563eb;
+    color: #fff;
+    border-color: #1d4ed8;
+}
+
+/* Tree expand/collapse icon - PropertiesPage와 유사한 스타일 */
+.io-tree-expand-icon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    margin-right: 6px;
+    cursor: pointer;
+    position: relative;
+    flex-shrink: 0;
+}
+
+.io-tree-expand-icon::before {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 0;
+    height: 0;
+    border-left: 4px solid #666;
+    border-top: 3px solid transparent;
+    border-bottom: 3px solid transparent;
+    transition: transform 0.2s ease;
+}
+
+.io-tree-node.expanded .io-tree-expand-icon::before {
+    transform: translate(-50%, -50%) rotate(90deg);
+}
+
+.io-tree-node-label {
+    flex: 1;
+    word-break: break-word;
+}
+
+/* Responsive Design */
+@media (max-width: 900px) {
+    .io-page {
+        height: auto;
+        min-height: 500px;
+    }
+
+    .io-flex {
+        flex-direction: column;
+        gap: 16px;
+        padding: 16px;
+    }
+
+    .io-input-area,
+    .io-tree-area {
+        flex: none;
+        height: auto;
+        min-height: 300px;
+    }
+
+    .io-tabs {
+        flex-direction: column;
+        gap: 2px;
+    }
+
+    .io-tabs button {
+        border-radius: 6px;
+        margin-right: 0;
+        margin-bottom: 2px;
+    }
+}

@@ -1,0 +1,113 @@
+<Module type="SIM">
+    <moduleName>AstraSetupModule</moduleName>
+    <manufactures>google</manufactures>
+    <description>CameraNode using astra camera</description>
+    <examples></examples>
+  <idnType type="Bas">
+    <moduleID>
+      <mID>e4ab5c3f180d5f11bea033feb2b5a98a00F3A0400000000000000000984000</mID>
+      <iID>00</iID>
+    </moduleID>
+    <informationModelVersion>1.0</informationModelVersion>
+  </idnType>
+  <properties>
+    <osType type="Ubuntu" bits="64" version="22.04"/>
+    <compiler>
+      <osName>Ubuntu</osName>
+      <verRangeOS min="22.04" max="22.04"/>
+      <compilerName>CPython</compilerName>
+      <verRangeCompiler min="3.8.0" max="Higher"/>
+      <bitnCPUarch>aarch64</bitnCPUarch>
+    </compiler>
+    <exeType>
+      <Item>
+        <opType>PERIODIC</opType>
+        <priority>1</priority>
+        <hardRT>False</hardRT>
+        <timeConstraint>1000</timeConstraint>
+        <instanceType>Singleton</instanceType>
+      </Item>
+    </exeType>
+    <Libraries>
+      <Item>
+        <name>libastra</name>
+        <version>1.42.1</version>
+      </Item>
+      <Item>
+        <name>opencv</name>
+        <version>2.12.3</version>
+      </Item>
+    </Libraries>
+  </properties>
+  <ioVariables>
+    <Outputs>
+      <Output name="camera.color.camera_info" type="sensor_msgs.CameraInfo">
+        <Output name="height" type="uint32"/>
+        <Output name="width" type="uint32"/>
+        <Output name="distortion_model" type="string"/>
+        <Output name="D" type="float64 []"/>
+        <Output name="K" type="float64 [9]"/>
+        <Output name="R" type="float64 [9]"/>
+        <Output name="P" type="float64 [12]"/>
+        <Output name="binning_x" type="uint32"/>
+        <Output name="binning_y" type="uint32"/>
+        <Output name="roi" type="sensor_msgs.RegionOfInterest"/>
+      </Output>
+      <Output name="camera.color.image_raw" type="sensor_msgs.Image">
+        <Output name="height" type="uint32"/>
+        <Output name="width" type="uint32"/>
+        <Output name="encoding" type="string"/>
+        <Output name="is_bigendian" type="uint8"/>
+        <Output name="step" type="uint32"/>
+        <Output name="data" type="uint8 []"/>
+      </Output>
+      <Output name="camera.depth.camera_info" type="sensor_msgs.CameraInfo">
+        <Output name="height" type="uint32"/>
+        <Output name="width" type="uint32"/>
+        <Output name="distortion_model" type="string"/>
+        <Output name="D" type="float64 []"/>
+        <Output name="K" type="float64 [9]"/>
+        <Output name="R" type="float64 [9]"/>
+        <Output name="P" type="float64 [12]"/>
+        <Output name="binning_x" type="uint32"/>
+        <Output name="binning_y" type="uint32"/>
+        <Output name="roi" type="sensor_msgs.RegionOfInterest"/>
+      </Output>
+      <Output name="camera.depth.image_raw" type="sensor_msgs.Image">
+        <Output name="height" type="uint32"/>
+        <Output name="width" type="uint32"/>
+        <Output name="encoding" type="string"/>
+        <Output name="is_bigendian" type="uint8"/>
+        <Output name="step" type="uint32"/>
+        <Output name="data" type="uint8 []"/>
+      </Output>
+    </Outputs>
+  </ioVariables>
+  <services/>
+  <infra>
+    <middleware>
+      <name>ROS2</name>
+      <version min="humble" max="humble"/>
+    </middleware>
+    <comms>
+      <mostTopProtocol>
+        <name>Fast-DDS</name>
+        <version min="2.6.7" max="2.6.7"/>
+      </mostTopProtocol>
+      <underlyingProtocol>
+        <connectionType>IEEE 802.11ac</connectionType>
+        <typePhyMac>Ethernet</typePhyMac>
+        <typeNetTrans>UDP</typeNetTrans>
+        <speed>100000</speed>
+      </underlyingProtocol>
+    </comms>
+  </infra>
+<safeSecure/>
+  <modelling/>
+  <execForm>
+    <exeForm>
+      <exeFileURL>mhr1840/iiclab:realsense</exeFileURL>
+      <shellCmd>docker run -it --rm --network=host --privileged -v /dev:/dev astra_setup</shellCmd>
+    </exeForm>
+  </execForm>
+</Module>
