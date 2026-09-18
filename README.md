@@ -12,6 +12,7 @@ rodos2-main/
   rodos2-server/   Spring Boot server
   document/        사용·설계·보고 문서
   HANDOVER.md      원본 대비 변경 내용과 수정 의도
+  FILE_CHANGES.md  디렉터리·파일별 추가/수정/삭제 위치
   CHANGELOG.md     변경 요약
 ```
 
@@ -86,6 +87,7 @@ npm test -- --watchAll=false
 ## 주요 문서
 
 - [인수인계 문서](HANDOVER.md)
+- [파일별 변경 지도](FILE_CHANGES.md)
 - [변경 기록](CHANGELOG.md)
 - [GitHub 전달용 PR 설명](document/GITHUB_HANDOVER.md)
 - [초보자 실행 안내](document/RODOS2_구글드라이브_실행_접속_안내.md)
