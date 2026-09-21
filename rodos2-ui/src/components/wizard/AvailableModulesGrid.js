@@ -1,7 +1,7 @@
 import React from 'react';
 import '../../styles/wizard/AvailableModulesGrid.css';
 
-/** 열 순서: Action → Name → Module ID (인라인 grid로 레이아웃 고정, LTR 강제) */
+/** 인수인계(4.1): Wizard 간 선택 표를 공통화해 Action → Name → Module ID 순서를 고정한다. */
 const GRID_TEMPLATE = 'minmax(96px, 0.22fr) minmax(120px, 1fr) minmax(160px, 2fr)';
 
 const rowBase = {

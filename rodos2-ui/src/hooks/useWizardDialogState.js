@@ -122,6 +122,7 @@ export function useWizardDialogState(open, type, wizardData, onClose, onComplete
         return newValue;
     }, [isPlainObject]);
 
+    // 인수인계(4.4~4.5): 기존 부모 IM을 보존하며 Robot의 Controller를 OWNED member로 기록한다.
     const buildMergedModuleState = useCallback((state) => {
         const existingControllerInfo = wizardData?.hwModule?.controllerInfoModel || {};
         if (!state) return existingControllerInfo;

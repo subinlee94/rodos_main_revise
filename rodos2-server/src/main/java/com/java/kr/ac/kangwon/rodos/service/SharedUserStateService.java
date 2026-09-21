@@ -249,6 +249,7 @@ public class SharedUserStateService {
 
                 String moduleName = (String) hw.get("name");
                 String moduleType = (String) hw.get("moduleType");
+                // 인수인계(4.4, 4.8): 캔버스 moduleID를 우선 ref로 써서 이름 재조회 실패 시 임의 ID가 생기지 않게 한다.
                 String hwModuleRef = resolveModuleRefFromCanvas(hw, moduleName);
 
                 // ModuleClassifier를 사용해서 실제 분류 결정
@@ -748,10 +749,7 @@ public class SharedUserStateService {
     }
 
     /**
-     * 모듈 실행 (Execute 기능) - ExecutorManager 사용
-     */
-    /**
-     * Execute 전 캔버스/매핑 상태 검증 (Robot SW moduleID·HW target·Simulation 설정).
+     * 인수인계(4.8): Execute 전 Robot SW ref, HW target, Simulation 설정을 검사해 잘못된 Agent 호출을 막는다.
      */
     public Map<String, Object> validateExecuteReadiness(SharedUserState state) throws IOException {
         java.util.List<String> errors = new java.util.ArrayList<>();

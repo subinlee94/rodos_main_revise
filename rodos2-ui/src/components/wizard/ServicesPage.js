@@ -160,6 +160,7 @@ function ServicesPage({ services = {}, onChange, wizardType = 'software', linked
         );
     };
 
+    // 인수인계(4.7): 연결 모듈의 Service method를 선택적으로 합성하고 출처 ID를 유지한다.
     const handleToggleLinkedMethod = (item) => {
         const updatedServices = {
             noOfBasicService: services?.noOfBasicService || '',

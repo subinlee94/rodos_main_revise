@@ -53,6 +53,7 @@ public class IMRegistryServiceImpl implements IMRegistryApi {
 				.build();
 	}
 
+	// 인수인계(4.3): 원격 목록에 로컬 저장분을 병합하고 짧은 캐시로 느린 Registry의 영향을 줄인다.
 	@Override
 	public List<IM> getListIM(String classification) {
 		CachedList cached = listCache.get(classification);
@@ -156,6 +157,7 @@ public class IMRegistryServiceImpl implements IMRegistryApi {
 		}
 	}
 
+	// 인수인계(4.3): 원격 업로드 실패 시 설정이 허용하면 로컬 저장을 시도하고 저장 위치를 결과에 명시한다.
 	@Override
 	public ImUploadResult doUploadIM(IM informationModel) {
 		listCache.clear();

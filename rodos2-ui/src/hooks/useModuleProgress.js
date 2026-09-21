@@ -93,6 +93,7 @@ export function useModuleProgress() {
                 return;
             }
 
+            // 인수인계(4.8): Agent 호출 전에 서버에서 ref/target/Simulation 구성을 검증한다.
             if (operation === 'execute') {
                 try {
                     const validation = await canvasAPI.validateExecute();

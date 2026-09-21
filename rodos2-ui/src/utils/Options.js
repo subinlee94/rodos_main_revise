@@ -619,7 +619,7 @@ export const CPU_ARCH_OPTIONS = [
     { value: 'custom', label: '직접입력' },
 ];
 
-// 비트 옵션 (더 상세)
+// 인수인계(4.2): 서버 enum과 값(BIT16/BIT32/BIT64)을 맞춰 Software IM 저장 오류를 막는다.
 export const BIT_OPTIONS = [
     { value: '', label: 'Select Bit' },
     { value: 'BIT16', label: '16-bit' },

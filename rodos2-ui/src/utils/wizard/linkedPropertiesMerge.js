@@ -1,4 +1,4 @@
-/** SW 모듈 properties 블록 병합 (Robot/Controller 위자드 계승용) */
+/** 인수인계(4.5~4.6): XML/API 형식 차이를 정규화한 뒤 Robot/Controller가 선택한 Properties를 병합한다. */
 
 const normalizeNoBit = (bitValue) => {
     if (!bitValue || typeof bitValue !== 'string') return bitValue || '';

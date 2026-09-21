@@ -24,6 +24,7 @@ export function useCanvasDragAndDrop(
     setDragOverHexIdx,
     onOpenLinkedWizard
 ) {
+    // 인수인계(4.4): Robot과 Controller에 동일한 SW 연결 흐름을 적용하고 중복 배치를 피한다.
     const attachSwToParent = useCallback((
         e,
         idx,

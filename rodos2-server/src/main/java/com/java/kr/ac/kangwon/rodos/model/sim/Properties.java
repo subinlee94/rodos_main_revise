@@ -25,7 +25,7 @@ public class Properties {
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	public CompilerType compilerType;
 
-	/** 일부 IM XML은 {@code compilerType} 태그를 사용한다 (legacy는 {@code compiler}). */
+	/** 인수인계(4.6): legacy {@code compiler}와 새 {@code compilerType} XML을 모두 읽는다. */
 	@JacksonXmlProperty(localName = "compilerType")
 	@JsonInclude(JsonInclude.Include.NON_NULL)
 	private CompilerType compilerTypeAlt;

@@ -150,6 +150,7 @@ function PropertiesPage({ properties = {}, onChange, wizardType = 'software', li
         );
     };
 
+    // 인수인계(4.5, 4.7): 연결 모듈의 Property만 선택적으로 가져오고 관련 탭 상태를 함께 갱신한다.
     const handleToggleLinkedProperty = (property) => {
         const matchPredicate = (existing) =>
             (existing?.name || '') === (property?.name || '') &&

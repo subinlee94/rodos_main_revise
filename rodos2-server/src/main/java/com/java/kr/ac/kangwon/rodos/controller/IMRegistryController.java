@@ -82,7 +82,7 @@ public class IMRegistryController {
     @GetMapping("/all")
     public ResponseEntity<Object> getAllModules() {
         try {
-            // 각 분류별로 직접 호출하여 모듈 목록 조회
+            // 인수인계(4.3): 분류별 조회를 병렬화해 원격 Registry 지연이 누적되지 않게 한다.
             CompletableFuture<List<IM>> aiFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("ai"));
             CompletableFuture<List<IM>> softwareFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("software"));
             CompletableFuture<List<IM>> controllerFuture = CompletableFuture.supplyAsync(() -> registryService.getListIM("controller"));
@@ -279,7 +279,7 @@ public class IMRegistryController {
     }
 
     /**
-     * IDnType에서 선택한 SW 모듈들(swAspects)의 services/ioVariables 조회
+     * 인수인계(4.7): 선택한 swAspects와 hwAspects를 펼쳐 Properties/I/O/Services와 출처를 반환한다.
      */
     @PostMapping("/module/linked-data")
     public ResponseEntity<Object> getLinkedModuleData(@RequestBody LinkedModuleAspectsRequest request) {

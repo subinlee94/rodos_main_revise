@@ -111,6 +111,7 @@ function IOVariablesPage({ ioVariables = {}, setIoVariables, wizardType = 'softw
         }));
     };
 
+    // 인수인계(4.7): 가져온 I/O에 원본 moduleID를 남겨 출처 추적과 중복 판별에 사용한다.
     const normalizeLinkedVariable = (variable, direction, sourceModuleID) => {
         const cloned = JSON.parse(JSON.stringify(variable || {}));
         return {
